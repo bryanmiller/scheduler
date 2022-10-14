@@ -188,13 +188,21 @@ class DefaultRanker(Ranker):
             return scores
 
         # TODO: Check this for correctness in mapping from old calcs to new.
-        remaining = obs.exec_time() - obs.total_used()
-        cplt = (program.total_used() + remaining) / program.total_awarded()
+        # remaining = obs.exec_time() - obs.total_used()
+        # cplt = (program.total_used() + remaining) / program.total_awarded()
+        remaining = obs.exec_time()
+        cplt = (remaining) / program.total_awarded()
 
         metric, metric_s = self._metric_slope(np.array([cplt]),
                                               np.ones(1, dtype=int) * program.band,
                                               np.ones(1) * 0.8,
                                               program.thesis)
+        print(f'{obs.id:20}  exec: {obs.exec_time().total_seconds() / 3600.:.2f} '\
+                f'used: {obs.total_used().total_seconds() / 3600.:.2f} '\
+                f'prog awarded: {program.total_awarded().total_seconds() / 3600.:.2f} ' \
+                f'prog used: {program.total_used().total_seconds() / 3600.:.2f} ' \
+              )
+        print(f'   cplt: {cplt:.2f}  metric: {metric[0]:.2f}')
 
         # Declination for the base target per night.
         dec = [target_info[night_idx].coord.dec for night_idx in self.night_indices]
@@ -218,6 +226,7 @@ class DefaultRanker(Ranker):
         kk = [np.where(wha[night_idx] <= 0.)[0] for night_idx in self.night_indices]
         for night_idx in self.night_indices:
             wha[night_idx][kk[night_idx]] = 0.
+        print(f'   max wha: {np.max(wha[0]):.2f}  visfrac: {target_info[night_idx].rem_visibility_frac:.5f}')
 
         p = [(metric[0] ** self.params.met_power) *
              (target_info[night_idx].rem_visibility_frac ** self.params.vis_power) *
