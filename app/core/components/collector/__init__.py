@@ -245,7 +245,8 @@ class Collector(SchedulerComponent):
         # * rem_visibility_frac: fraction of remaining observation length to rem_visibility_time
         # we want to process the nights BACKWARDS so that we can sum up the visibility time.
         rem_visibility_time = 0.0 * u.h
-        rem_visibility_frac_numerator = obs.exec_time() - obs.total_used()
+        # rem_visibility_frac_numerator = obs.exec_time() - obs.total_used()
+        rem_visibility_frac_numerator = obs.exec_time()
 
         target_info: TargetInfoNightIndexMap = {}
 

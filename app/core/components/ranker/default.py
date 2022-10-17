@@ -225,7 +225,7 @@ class DefaultRanker(Ranker):
         kk = [np.where(wha[night_idx] <= 0.)[0] for night_idx in self.night_indices]
         for night_idx in self.night_indices:
             wha[night_idx][kk[night_idx]] = 0.
-        print(f'   max wha: {np.max(wha[0]):.2f}  visfrac: {target_info[night_idx].rem_visibility_frac:.5f}')
+        print(f'   max wha: {np.max(wha[0]):.2f}  visfrac: {target_info[0].rem_visibility_frac:.5f}')
 
         p = [(metric[0] ** self.params.met_power) *
              (target_info[night_idx].rem_visibility_frac ** self.params.vis_power) *
@@ -237,7 +237,7 @@ class DefaultRanker(Ranker):
         for night_idx in self.night_indices:
             slot_indices = target_info[night_idx].visibility_slot_idx
             scores[night_idx].put(slot_indices, p[night_idx][slot_indices])
-
+        print(f'   max score: {np.max(scores[0])}')
         return scores
 
     # TODO: Should we be considering the scores of the subgroups or the scores of the
