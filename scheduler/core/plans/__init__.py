@@ -61,11 +61,13 @@ class Plan:
             start: datetime,
             start_time_slot: int,
             time_slots: int,
-            score: float) -> None:
+            score: float,
+            atom_start_idx: int,
+            atom_end_idx: int) -> None:
         visit = Visit(start,
                       obs.id,
-                      obs.sequence[0].id,
-                      obs.sequence[-1].id,
+                      atom_start_idx,
+                      atom_end_idx,
                       start_time_slot,
                       time_slots,
                       score,

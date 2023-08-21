@@ -31,6 +31,8 @@ class ObsPlanData:
     obs_start: datetime
     obs_len: int
     visit_score: float
+    atom_start_idx: int
+    atom_end_idx: int
 
 
 @dataclass(frozen=True)
@@ -110,7 +112,7 @@ class GreedyMaxOptimizer(BaseOptimizer):
         for atom in sequence:
             if not atom.observed:
                 total_exec += atom.exec_time
-                cumul_seq.append(total_exec)
+            cumul_seq.append(total_exec)
         if len(cumul_seq) == 0:
             cumul_seq.append(total_exec)
 
@@ -882,7 +884,9 @@ class GreedyMaxOptimizer(BaseOptimizer):
             obs=obs,
             obs_start=start,
             obs_len=visit_length,
-            visit_score=visit_score
+            visit_score=visit_score,
+            atom_start_idx=atom_start,
+            atom_end_idx=atom_end
         )
 
         # pseudo (internal) time charging
@@ -1009,4 +1013,6 @@ class GreedyMaxOptimizer(BaseOptimizer):
                                              obs_in_plan.obs_start,
                                              start_time_slot,
                                              obs_in_plan.obs_len,
-                                             obs_in_plan.visit_score)
+                                             obs_in_plan.visit_score,
+                                             obs_in_plan.atom_start_idx,
+                                             obs_in_plan.atom_end_idx)
