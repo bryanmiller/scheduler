@@ -232,8 +232,11 @@ def calculate_target_visibility(obs: Observation,
         rem_visibility_time += visibility_snapshot.visibility_time
         if rem_visibility_time.value:
             # This is a fraction, so convert to seconds to cancel the units out.
+            # print(f'rem_visibility_frac_numerator {rem_visibility_frac_numerator} {rem_visibility_frac_numerator.total_seconds()}')
+            # print(f'rem_visibility_time: {rem_visibility_time} {rem_visibility_time.to_value(u.s)}')
+            # print(f'visibility_frac: {rem_visibility_frac_numerator.total_seconds() / rem_visibility_time.value}')
             rem_visibility_frac = (rem_visibility_frac_numerator.total_seconds() /
-                                   rem_visibility_time.to_value(u.s))
+                                   rem_visibility_time.value)
         else:
             rem_visibility_frac = 0.0
 
