@@ -10,7 +10,8 @@ import os, sys
 # sys.path.append(os.path.join(os.environ['HOME'], 'python', 'pyexplore'))
 # sys.path.append(os.path.join(os.environ['HOME'], 'python', 'scheduler'))
 # sys.path.append(os.path.join(os.environ['HOME'], 'python', 'lucupy'))
-# from pyexplore import explore
+# from pyexplore import __version__
+from pyexplore.pyexplore import explore, schema
 
 from scheduler.core.programprovider.gpp.gppprogramprovider import GppProgramProvider
 from scheduler.core.sources.sources import Sources
@@ -23,20 +24,20 @@ if __name__ == '__main__':
 
     # List programs
     # TODO change pyexplore to other api query
-    # programs = explore.programs()
-    programs = []
+    programs = explore.get_programs(include_deleted=False)
+    # programs = []
     progid = None
     for p in programs:
-        print(f'{p.id}: {p.name}')
-        # progid = p.id if progid is None else progid
+        print(f'{p["id"]}: {p["name"]}')
+        # progid = p["id"] if progid is None else progid
     print("")
 
-    progid = 'p-11d'
+    progid = 'p-913'
 
     # TODO change pyexplore to other api query
-    # prog = explore.program(progid)
-    prog = {}
-    print(f'{progid} {prog.reference}: {prog.name} {prog.pi.orcid_family_name}')
+    prog = explore.get_program(progid)
+    # prog = {}
+    print(f'{progid} {prog.reference.label}: {prog.name}')
 
     # Parse into minimodel
     prog_mini = provider.parse_program(prog.__dict__)
