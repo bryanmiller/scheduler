@@ -10,7 +10,7 @@ from os import PathLike
 from pathlib import Path
 from typing import FrozenSet, Iterable, List, Mapping, Optional, Tuple, Dict
 
-# from pyexplore import explore
+from pyexplore.pyexplore import explore, schema
 # import numpy as np
 # from lucupy.helpers import dmsstr2deg
 from lucupy.minimodel import (AndOption, Atom, Band, CloudCover, Conditions, Constraints, ElevationType,
@@ -52,7 +52,7 @@ def get_gpp_data(program_ids: FrozenSet[str]) -> Iterable[dict]:
             # Query the program data from GPP.
             # TODO change pyexplore to other api query
             data = {}
-            # data = explore.program(program_id)
+            data = explore.get_program(program_id)
             print(f"Adding program: {program_id} {data.reference.label}")
             # Pass the class information as a dictionary to mimic the OCS json format
             yield data.__dict__
@@ -65,12 +65,14 @@ def gpp_program_data(program_list: Optional[bytes] = None) -> Iterable[dict]:
     if program_list is None:
         # GPP query
         # TODO change pyexplore to other api query
-        # obs_for_sched = explore.observations_for_scheduler(include_deleted=False)
-        obs_for_sched = []
+        obs_for_sched = explore.get_obs_by_state()
+        # obs_for_sched = []
         obs_progs = []
         for o in obs_for_sched:
-            print(f'{o.id}: {o.program.id} {o.title} {o.active_status} {o.status} {o.science_band}')
-            obs_progs.append(o.program.id)
+            # print(f'{o.id}: {o.program.id} {o.title} {o.active_status} {o.status} {o.science_band}')
+            print(f'{o.id}: {o.program.id} {o.program.proposal_status} {o.existence}')
+            if o.program.proposal_status == schema.ProposalStatus.ACCEPTED:
+                obs_progs.append(o.program.id)
         id_frozenset = frozenset(unique_list(obs_progs))
     else:
         try:
@@ -117,7 +119,7 @@ class GppProgramProvider(ProgramProvider):
     _site_for_inst = {'GMOS_NORTH': Site.GN, 'GMOS_SOUTH': Site.GS}
 
     # Allowed instrument statuses
-    _OBSERVATION_STATUSES = frozenset({ObservationStatus.READY, ObservationStatus.ONGOING})
+    _OBSERVATION_STATUSES = frozenset({ObservationStatus.READY.name, ObservationStatus.ONGOING.name})
 
     # Translate instrument names to use the OCS Resources
     _gpp_inst_to_ocs = {'GMOS_NORTH': 'GMOS-N', 'GMOS_SOUTH': 'GMOS-S'}
@@ -195,7 +197,7 @@ class GppProgramProvider(ProgramProvider):
 
     class _TAKeys:
         # CATEGORIES = 'timeAccountAllocationCategories'
-        CATEGORY = 'partner'
+        CATEGORY = 'category'
         AWARDED_PROG_TIME = 'duration'
         AWARDED_PART_TIME = 'awardedPartnerTime'
         USED_PROG_TIME = 'program'
@@ -228,7 +230,8 @@ class GppProgramProvider(ProgramProvider):
         # SETUPTIME = '' # obs_may5_grp.execution.digest.acquisition.time_estimate.total.hours
         # OBS_CLASS = 'obsClass'
         # PHASE2 = 'phase2Status'
-        ACTIVE = 'active_status'
+        # ACTIVE = 'active_status'
+        STATE = 'state'
         BAND = 'science_band'
         # TOO_OVERRIDE_RAPID = 'tooOverrideRapid'
 
@@ -955,11 +958,14 @@ class GppProgramProvider(ProgramProvider):
         belongs_to = program_id
 
         try:
-            active = data[GppProgramProvider._ObsKeys.ACTIVE].upper() != 'INACTIVE'
-            if not active:
-                logger.warning(f"Observation {obs_id} is inactive (skipping).")
-                print(f"Observation {obs_id} is inactive (skipping).")
-                return None
+            # active = data[GppProgramProvider._ObsKeys.STATE].upper() != 'INACTIVE'
+            workflow_state = data['workflow'][GppProgramProvider._ObsKeys.STATE].upper()
+            active = workflow_state != ObservationStatus.INACTIVE.name
+            # if workflow_state not in [schema.ObservationWorkflowState.READY, schema.ObservationWorkflowState.ONGOING]:
+            # if workflow_state not in [ObservationStatus.READY, ObservationStatus.ONGOING]:
+            #     logger.warning(f"Observation {obs_id} not READY or ONGOING (skipping).")
+            #     print(f"Observation {obs_id} not READY or ONGOING (skipping).")
+            #     return None
 
             # ToDo: there is no longer an observation-level obs_class, maybe check later from atom classes
             # obs_class = ObservationClass[data[GppProgramProvider._ObsKeys.OBS_CLASS].upper()]
@@ -977,10 +983,10 @@ class GppProgramProvider(ProgramProvider):
             priority = Priority.MEDIUM
 
             # If the status is not legal, terminate parsing.
-            status = ObservationStatus[data[GppProgramProvider._ObsKeys.STATUS].upper()]
-            if status not in GppProgramProvider._OBSERVATION_STATUSES:
-                logger.warning(f"Observation {obs_id} has invalid status {status.name}.")
-                print(f"Observation {obs_id} has invalid status {status.name}.")
+            # status = ObservationStatus[data[GppProgramProvider._ObsKeys.STATUS].upper()]
+            if workflow_state not in GppProgramProvider._OBSERVATION_STATUSES:
+                logger.warning(f"Observation {obs_id} has invalid status {workflow_state}.")
+                print(f"Observation {obs_id} has invalid status {workflow_state}.")
                 return None
 
             # ToDo: where to get the setup type?
@@ -1006,8 +1012,8 @@ class GppProgramProvider(ProgramProvider):
             # Atoms
             # ToDo: Perhaps add the sequence query to the original observation query
             # TODO change pyexplore to other api query
-            # sequence = explore.sequence(internal_id, include_acquisition=True)
-            sequence = []
+            sequence = explore.sequence(internal_id, include_acquisition=True)
+            # sequence = []
             atoms, obs_class = self.parse_atoms(site, sequence)
 
             # Pre-imaging
@@ -1092,7 +1098,7 @@ class GppProgramProvider(ProgramProvider):
                 order=obs_num,
                 title=title,
                 site=site,
-                status=status,
+                status=workflow_state,
                 active=active,
                 priority=priority,
                 setuptime_type=setuptime_type,
@@ -1186,18 +1192,23 @@ class GppProgramProvider(ProgramProvider):
                 # print(f"\t element['observation']}")
                 # print(f"\t {element['observation']['id']}")
                 # TODO change pyexplore to other api query
-                # obs_data = explore.observation(element['observation']['id'])
-                obs_data = []
-                obs = self.parse_observation(obs_data.__dict__, program_id=program_id, num=(0, 0),
+                try:
+                    obs_data = explore.get_observation_for_sched(element['observation']['id'])
+                except:
+                    obs_data = None
+                    obs = None
+                if obs_data is not None:
+                    obs = self.parse_observation(obs_data.__dict__, program_id=program_id, num=(0, 0),
                                              split=split, split_by_iterator=split_by_iterator)
+
                 if obs is not None:
                     observations.append(obs)
                     obs_parent_indices.append(elem_parent_index)
             elif element['group']:
                 # print(f"\t {element['group']['id']}")
                 # TODO change pyexplore to other api query
-                # grp_data, grp_tab = explore.group(element['group']['id'])
-                grp_data = {}
+                grp_data, grp_tab = explore.group(element['group']['id'])
+                # grp_data = {}
                 grp_tab = []
                 subgroup_id = GroupID(element['group']['id'])
                 subgroup = self.parse_group(grp_data.__dict__, program_id, subgroup_id, split=split,
@@ -1352,6 +1363,7 @@ class GppProgramProvider(ProgramProvider):
         time_act_alloc = frozenset(self.parse_time_allocation(ta_data) for ta_data in time_act_alloc_data)
 
         # Previous time used - eventually loop over bands
+        print(data[GppProgramProvider._ProgramKeys.TIME_CHARGE])
         time_used = frozenset([self.parse_time_used(data[GppProgramProvider._ProgramKeys.TIME_CHARGE])])
 
         # ToOs
