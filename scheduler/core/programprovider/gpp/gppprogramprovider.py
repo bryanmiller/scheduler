@@ -119,7 +119,7 @@ class GppProgramProvider(ProgramProvider):
     _site_for_inst = {'GMOS_NORTH': Site.GN, 'GMOS_SOUTH': Site.GS}
 
     # Allowed instrument statuses
-    _OBSERVATION_STATUSES = frozenset({ObservationStatus.READY.name, ObservationStatus.ONGOING.name})
+    _OBSERVATION_STATUSES = frozenset({ObservationStatus.READY, ObservationStatus.ONGOING})
 
     # Translate instrument names to use the OCS Resources
     _gpp_inst_to_ocs = {'GMOS_NORTH': 'GMOS-N', 'GMOS_SOUTH': 'GMOS-S'}
@@ -299,7 +299,7 @@ class GppProgramProvider(ProgramProvider):
 
     class _AtomKeys:
         ATOM = 'atom'
-        OBS_CLASS = 'class'
+        OBS_CLASS = 'observe_class'
         # INSTRUMENT = ''
         # INST_NAME = ''
         WAVELENGTH = 'wavelength'
@@ -707,7 +707,7 @@ class GppProgramProvider(ProgramProvider):
 
         # Disperser
         disperser = None
-        if instrument in ['IGRINS', 'MAROON-X', 'GRACES']:
+        if instrument in ['IGRINS', 'IGRINS-2', 'MAROON-X', 'GRACES']:
             disperser = instrument
         elif GppProgramProvider._AtomKeys.DISPERSER in data.keys():
             disperser = data[GppProgramProvider._AtomKeys.DISPERSER]
@@ -797,7 +797,8 @@ class GppProgramProvider(ProgramProvider):
         n_atom = 0
         instrument_resources = frozenset([self._sources.origin.resource.lookup_resource(instrument, resource_type=ResourceType.INSTRUMENT)])
         for step in sequence:
-            if step[GppProgramProvider._AtomKeys.OBS_CLASS] != 'ACQUISITION':
+            # Ignore acquisition steps
+            if 'ACQ' not in step[GppProgramProvider._AtomKeys.OBS_CLASS]:
                 next_atom = False
                 atom_id = step[GppProgramProvider._AtomKeys.ATOM]
                 observe_class = step[GppProgramProvider._AtomKeys.OBS_CLASS]
@@ -959,8 +960,8 @@ class GppProgramProvider(ProgramProvider):
 
         try:
             # active = data[GppProgramProvider._ObsKeys.STATE].upper() != 'INACTIVE'
-            workflow_state = data['workflow'][GppProgramProvider._ObsKeys.STATE].upper()
-            active = workflow_state != ObservationStatus.INACTIVE.name
+            workflow_state = ObservationStatus[data['workflow'][GppProgramProvider._ObsKeys.STATE].upper()]
+            active = workflow_state != ObservationStatus.INACTIVE
             # if workflow_state not in [schema.ObservationWorkflowState.READY, schema.ObservationWorkflowState.ONGOING]:
             # if workflow_state not in [ObservationStatus.READY, ObservationStatus.ONGOING]:
             #     logger.warning(f"Observation {obs_id} not READY or ONGOING (skipping).")
@@ -985,14 +986,16 @@ class GppProgramProvider(ProgramProvider):
             # If the status is not legal, terminate parsing.
             # status = ObservationStatus[data[GppProgramProvider._ObsKeys.STATUS].upper()]
             if workflow_state not in GppProgramProvider._OBSERVATION_STATUSES:
-                logger.warning(f"Observation {obs_id} has invalid status {workflow_state}.")
-                print(f"Observation {obs_id} has invalid status {workflow_state}.")
+                logger.warning(f"Observation {obs_id} with status {workflow_state.name} is not READY/ONGOING.")
                 return None
 
-            # ToDo: where to get the setup type?
-            # setuptime_type = SetupTimeType[data[GppProgramProvider._ObsKeys.SETUPTIME_TYPE]]
-            setuptime_type = SetupTimeType.FULL
-            acq_overhead = timedelta(seconds=data['execution']['digest']['setup']['full']['seconds'])
+            # Acquisition setup type
+            try:
+                acq_overhead = timedelta(seconds=data['execution']['digest']['setup']['full']['seconds'])
+                setuptime_type = SetupTimeType.FULL
+            except:
+                acq_overhead = timedelta(seconds=data['execution']['digest']['setup']['reacquisition']['seconds'])
+                setuptime_type = SetupTimeType.REACQUISITION
 
             # Science band
             band = Band[data[GppProgramProvider._ObsKeys.BAND]]
@@ -1012,11 +1015,12 @@ class GppProgramProvider(ProgramProvider):
             # Atoms
             # ToDo: Perhaps add the sequence query to the original observation query
             # TODO change pyexplore to other api query
-            sequence = explore.sequence(internal_id, include_acquisition=True)
+            sequence = explore.get_sequence(internal_id, include_acquisition=True)
             # sequence = []
             atoms, obs_class = self.parse_atoms(site, sequence)
+            # print(f'obs_class = {obs_class.name}')
 
-            # Pre-imaging
+            # Pre-imaging - False until MOS mode supported
             preimaging = False
 
             # Targets
@@ -1252,6 +1256,7 @@ class GppProgramProvider(ProgramProvider):
             children=list(reversed(children)),  # to get the order correct
             group_option=group_option)
 
+
     def parse_time_allocation(self, data: dict, band: Band = None) -> TimeAllocation:
         """Time allocations by category and band"""
         category = TimeAccountingCode[data[GppProgramProvider._TAKeys.CATEGORY]]
@@ -1270,18 +1275,37 @@ class GppProgramProvider(ProgramProvider):
             band=sciband
         )
 
-    def parse_time_used(self, data: dict) -> TimeUsed:
-        """Previously used/charged time"""
-        program_used = timedelta(hours=data[GppProgramProvider._TAKeys.USED_PROG_TIME]['hours'])
-        partner_used = timedelta(hours=data[GppProgramProvider._TAKeys.USED_PART_TIME]['hours'])
-        not_charged = timedelta(hours=data[GppProgramProvider._TAKeys.NOT_CHARGED_TIME]['hours'])
-        # ToDo: include band
 
-        return TimeUsed(
-            program_used=program_used,
-            partner_used=partner_used,
-            not_charged=not_charged
-        )
+    def init_time_used(self, time_alloc):
+        """Set the used times for each science band to 0"""
+        time_used = []
+        bands = []
+        for alloc in time_alloc:
+            band = alloc.band
+            if band not in bands:
+                bands.append(band)
+                time_used.append(TimeUsed(band=band, program_used=timedelta(hours=1.0),
+                                     partner_used=timedelta(hours=0.5), not_charged=timedelta(hours=0.0)))
+        return time_used
+
+
+    def parse_time_used(self, time_used: List, time_used_data: List, band: Band = None) -> List:
+        """Previously used/charged time, match by Band"""
+        if len(time_used_data) > 0:
+            for data in time_used_data:
+                if band is None:
+                    sciband = Band(int(data['band'][-1]))
+                else:
+                    sciband = band
+
+                for used_time in time_used:
+                    if used_time.band == sciband:
+                        used_time.program_used = timedelta(hours=2.5)
+                        # used_time.program_used = timedelta(hours=data['time'][GppProgramProvider._TAKeys.USED_PROG_TIME]['hours'])
+                        used_time.partner_used = timedelta(hours=data['time'][GppProgramProvider._TAKeys.USED_PART_TIME]['hours'])
+                        used_time.not_charged = timedelta(hours=data['time'][GppProgramProvider._TAKeys.NOT_CHARGED_TIME]['hours'])
+
+        return time_used
 
     def parse_program(self, data: dict) -> Optional[Program]:
         """
@@ -1337,7 +1361,7 @@ class GppProgramProvider(ProgramProvider):
             program_mode = ProgramMode['QUEUE']  # Need a separate field to specify PV
 
         # Band
-        band = Band(1)  # Should be an allocation by band, then the band is set for each observation
+        # band = Band(1)  # Should be an allocation by band, then the band is set for each observation
         # try:
         #     band = Band(int(data[GppProgramProvider._ProgramKeys.BAND]))
         # except ValueError:
@@ -1362,9 +1386,11 @@ class GppProgramProvider(ProgramProvider):
         time_act_alloc_data = data[GppProgramProvider._ProgramKeys.TIME_ACCOUNT_ALLOCATION]
         time_act_alloc = frozenset(self.parse_time_allocation(ta_data) for ta_data in time_act_alloc_data)
 
-        # Previous time used - eventually loop over bands
-        print(data[GppProgramProvider._ProgramKeys.TIME_CHARGE])
-        time_used = frozenset([self.parse_time_used(data[GppProgramProvider._ProgramKeys.TIME_CHARGE])])
+        # Previous time used
+        time_used_data = data[GppProgramProvider._ProgramKeys.TIME_CHARGE]
+        time_used = self.init_time_used(time_act_alloc)
+        time_used = frozenset(self.parse_time_used(time_used, time_used_data))
+        # print(f'time_used: {time_used}')
 
         # ToOs
         too_type = None
