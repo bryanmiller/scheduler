@@ -41,7 +41,6 @@ __all__ = [
 logger = logger_factory.create_logger(__name__)
 
 
-# DEFAULT_GPP_DATA_PATH = Path(ROOT_DIR) / 'scheduler' / 'data' / 'programs.zip'
 DEFAULT_PROGRAM_ID_PATH = Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_program_ids.txt'
 
 
@@ -75,9 +74,12 @@ def gpp_program_data(program_list: Optional[bytes] = None) -> Iterable[dict]:
                 obs_progs.append(o.program.id)
         id_frozenset = frozenset(unique_list(obs_progs))
     else:
+        list_file = ''
         try:
             # Try to read the file and create a frozenset from its lines
-            if program_list.lower() == 'default':
+            if isinstance(program_list, List):
+                id_frozenset = frozenset(p.strip() for p in program_list if p.strip() and p.strip()[0] != '#')
+            elif program_list == 'default':
                 list_file = DEFAULT_PROGRAM_ID_PATH
             else:
                 list_file = program_list
@@ -85,9 +87,10 @@ def gpp_program_data(program_list: Optional[bytes] = None) -> Iterable[dict]:
             if isinstance(program_list, bytes):
                 file = program_list.decode('utf-8')
                 id_frozenset = frozenset(f.strip() for f in file.split('\n') if f.strip() and f.strip()[0] != '#')
-            else:
+            elif list_file != '':
                 with list_file.open('r') as file:
                     id_frozenset = frozenset(line.strip() for line in file if line.strip() and line.strip()[0] != '#')
+
         except FileNotFoundError:
             # If the file does not exist, set id_frozenset to None
             id_frozenset = None
@@ -1284,8 +1287,8 @@ class GppProgramProvider(ProgramProvider):
             band = alloc.band
             if band not in bands:
                 bands.append(band)
-                time_used.append(TimeUsed(band=band, program_used=timedelta(hours=1.0),
-                                     partner_used=timedelta(hours=0.5), not_charged=timedelta(hours=0.0)))
+                time_used.append(TimeUsed(band=band, program_used=timedelta(hours=0.0),
+                                     partner_used=timedelta(hours=0.0), not_charged=timedelta(hours=0.0)))
         return time_used
 
 
@@ -1300,9 +1303,10 @@ class GppProgramProvider(ProgramProvider):
 
                 for used_time in time_used:
                     if used_time.band == sciband:
-                        used_time.program_used = timedelta(hours=2.5)
-                        # used_time.program_used = timedelta(hours=data['time'][GppProgramProvider._TAKeys.USED_PROG_TIME]['hours'])
-                        used_time.partner_used = timedelta(hours=data['time'][GppProgramProvider._TAKeys.USED_PART_TIME]['hours'])
+                        # used_time.program_used = timedelta(hours=2.5)
+                        used_time.program_used = timedelta(hours=data['time'][GppProgramProvider._TAKeys.USED_PROG_TIME]['hours'])
+                        # used_time.partner_used = timedelta(hours=data['time'][GppProgramProvider._TAKeys.USED_PART_TIME]['hours'])
+                        used_time.partner_used = timedelta(hours=0.0)
                         used_time.not_charged = timedelta(hours=data['time'][GppProgramProvider._TAKeys.NOT_CHARGED_TIME]['hours'])
 
         return time_used

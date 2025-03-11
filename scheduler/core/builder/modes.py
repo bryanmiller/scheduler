@@ -9,6 +9,7 @@ import strawberry  # noqa
 from scheduler.core.sources.sources import Sources
 from .schedulerbuilder import SchedulerBuilder
 from .validationbuilder import ValidationBuilder
+from .simulationbuilder import SimulationBuilder
 from ..eventsqueue import EventQueue
 
 
@@ -38,6 +39,6 @@ def dispatch_with(mode: SchedulerModes, sources: Sources, events: EventQueue) ->
         case SchedulerModes.VALIDATION:
             return ValidationBuilder(sources, events)
         case SchedulerModes.SIMULATION:
-            raise ValueError(f'{mode.value} not implemented yet.')
+            return SimulationBuilder(sources, events)
         case SchedulerModes.OPERATION:
             raise ValueError(f'{mode.value} not implemented yet.')

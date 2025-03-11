@@ -30,7 +30,7 @@ def main(*,
 
     # Parsed program file (this replaces the program picker from Schedule)
     with open(programs_ids, 'r') as file:
-        programs_list = [line.strip() for line in file]
+        programs_list = [line.strip() for line in file if line.strip()[0] != '#']
 
     # Create Parameters
     params = SchedulerParameters(start=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
