@@ -1,5 +1,5 @@
 *******************************************************************************
-Ephemeris / WWW_USER Mon Mar 24 11:25:44 2025 Pasadena, USA      / Horizons    
+Ephemeris / WWW_USER Mon Mar 10 07:32:17 2025 Pasadena, USA      / Horizons    
 *******************************************************************************
 Target body name: (2017 UX51)                     {source: JPL#22}
 Center body name: Earth (399)                     {source: DE441}
@@ -25,8 +25,8 @@ RA format       : HMS
 Time format     : CAL 
 Calendar mode   : Mixed Julian/Gregorian
 RTS-only print  : NO       
-EOP file        : eop.250321.p250617                                           
-EOP coverage    : DATA-BASED 1962-JAN-20 TO 2025-MAR-21. PREDICTS-> 2025-JUN-16
+EOP file        : eop.250307.p250603                                           
+EOP coverage    : DATA-BASED 1962-JAN-20 TO 2025-MAR-07. PREDICTS-> 2025-JUN-02
 Units conversion: 1 au= 149597870.700 km, c= 299792.458 km/s, 1 day= 86400.0 s 
 Table cut-offs 1: Elevation (-90.0deg=NO ),Airmass (>38.000=NO), Daylight (YES)
 Table cut-offs 2: Solar elongation (  0.0,180.0=NO ),Local Hour Angle( 0.0=NO )
@@ -796,7 +796,7 @@ Computations by ...
     Connect     : browser        https://ssd.jpl.nasa.gov/horizons/app.html#/x
                   API            https://ssd-api.jpl.nasa.gov/doc/horizons.html
                   command-line   telnet ssd.jpl.nasa.gov 6775
-                  e-mail/batch   https://ssd.jpl.nasa.gov/ftp/ssd/horizons_batch.txt
+                  e-mail/batch   https://ssd.jpl.nasa.gov/ftp/ssd/hrzn_batch.txt
                   scripts        https://ssd.jpl.nasa.gov/ftp/ssd/SCRIPTS
     Author      : Jon.D.Giorgini@jpl.nasa.gov
 

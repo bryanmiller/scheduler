@@ -37,11 +37,14 @@ def main(*,
     # Create Parameters
     params = SchedulerParameters(start=Time("2018-08-01 08:00:00", format='iso', scale='utc'),
                                  end=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
+    # params=SchedulerParameters(start=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
+    #                              end=Time("2018-10-03 08:00:00", format='iso', scale='utc'),
                                  sites=ALL_SITES,
                                  mode=SchedulerModes.VALIDATION,
                                  ranker_parameters=RankerParameters(),
                                  semester_visibility=False,
                                  num_nights_to_schedule=10,
+                                 # num_nights_to_schedule=3,
                                  programs_list=programs_list)
     engine = Engine(params)
     plan_summary, timelines = engine.run()
@@ -53,4 +56,6 @@ def main(*,
 if __name__ == '__main__':
     t0 = time.time()
     main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.redis.txt')
+    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.txt')
     print(f'Completed in {(time.time() - t0) / 60.} min')
+    # _logger.critical(f'Completed in {(time.time() - t0) / 60.} min')

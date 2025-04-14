@@ -72,9 +72,9 @@ class Engine:
 
         # We need the start of the night for checking if an event has been reached.
         # Next update indicates when we will recalculate the plan.
-        tne0 = time.time()
+        # tne0 = time.time()
         night_events = scp.collector.get_night_events(site)
-        print(f'\tNight events returned in {(time.time() - tne0)} sec')
+        # print(f'\tNight events returned in {(time.time() - tne0)} sec')
 
         night_start = night_events.twilight_evening_12[night_idx].to_datetime(site.timezone)
         next_update[site] = None
@@ -171,11 +171,11 @@ class Engine:
                     else:
                         ta_description = f'up to timeslot {update.timeslot_idx}.'
                     _logger.debug(f'Time accounting: site {site_name} for night {night_idx} {ta_description}')
-                    ta0 = time.time()
+                    # ta0 = time.time()
                     scp.collector.time_accounting(plans=plans,
                                                   sites=frozenset({site}),
                                                   end_timeslot_bounds=end_timeslot_bounds)
-                    print(f'\tTA completed in {(time.time() - ta0)} sec')
+                    # print(f'\tTA completed in {(time.time() - ta0)} sec')
 
                     if update.done:
                         # In the case of the morning twilight, which is the only thing that will
@@ -262,12 +262,12 @@ class Engine:
         selector = builder.build_selector(collector=collector,
                                           num_nights_to_schedule=self.params.num_nights_to_schedule,
                                           blueprint=Blueprints.selector)
-        t2 = time.time()
-        print(f'Selector built in {(t2 - t1)} sec')
+        # t2 = time.time()
+        # print(f'Selector built in {(t2 - t1)} sec')
 
         optimizer = builder.build_optimizer(Blueprints.optimizer)
-        t3 = time.time()
-        print(f'Optimizer built in {(t3 - t2)} sec')
+        # t3 = time.time()
+        # print(f'Optimizer built in {(t3 - t2)} sec')
         # ranker = DefaultRanker(collector,
         #                       self.params.night_indices,
         #                       self.params.sites,
@@ -275,8 +275,8 @@ class Engine:
 
         # Create the ChangeMonitor and keep track of when we should recalculate the plan for each site.
         self.change_monitor = ChangeMonitor(collector=collector, selector=selector)
-        t4 = time.time()
-        print(f'Change monitor created in {(t4 - t3)} sec')
+        # t4 = time.time()
+        # print(f'Change monitor created in {(t4 - t3)} sec')
 
         return SCP(collector, selector, optimizer)
 
@@ -383,9 +383,9 @@ class Engine:
 
         nightly_timeline = NightlyTimeline()
         scp = self.build()
-        tv0 = time.time()
+        # tv0 = time.time()
         initial_variants = self.setup(scp)
-        print(f'Initial variants created in {(time.time() - tv0) / 60.} min')
+        # print(f'Initial variants created in {(time.time() - tv0) / 60.} min')
 
         next_update = {site: None for site in self.params.sites}
 

@@ -1,5 +1,5 @@
 *******************************************************************************
-Ephemeris / WWW_USER Mon Apr  7 08:44:02 2025 Pasadena, USA      / Horizons    
+Ephemeris / WWW_USER Thu May 23 17:16:07 2024 Pasadena, USA      / Horizons    
 *******************************************************************************
 Target body name: (2018 RA1)                      {source: JPL#6}
 Center body name: Earth (399)                     {source: DE441}
@@ -25,8 +25,8 @@ RA format       : HMS
 Time format     : CAL 
 Calendar mode   : Mixed Julian/Gregorian
 RTS-only print  : NO       
-EOP file        : eop.250404.p250701                                           
-EOP coverage    : DATA-BASED 1962-JAN-20 TO 2025-APR-04. PREDICTS-> 2025-JUN-30
+EOP file        : eop.240523.p240816                                           
+EOP coverage    : DATA-BASED 1962-JAN-20 TO 2024-MAY-23. PREDICTS-> 2024-AUG-15
 Units conversion: 1 au= 149597870.700 km, c= 299792.458 km/s, 1 day= 86400.0 s 
 Table cut-offs 1: Elevation (-90.0deg=NO ),Airmass (>38.000=NO), Daylight (YES)
 Table cut-offs 2: Solar elongation (  0.0,180.0=NO ),Local Hour Angle( 0.0=NO )
@@ -125,7 +125,7 @@ $$SOE
  2018-Sep-12 23:54  m  11 19 26.399350 -45 43 27.77600
  2018-Sep-12 23:55  m  11 19 25.370496 -45 42 58.92418
  2018-Sep-12 23:56  m  11 19 24.343504 -45 42 30.09052
- 2018-Sep-12 23:57  m  11 19 23.318367 -45 42 01.27502
+ 2018-Sep-12 23:57  m  11 19 23.318367 -45 42 01.27503
  2018-Sep-12 23:58  m  11 19 22.295084 -45 41 32.47772
  2018-Sep-12 23:59  m  11 19 21.273648 -45 41 03.69863
  2018-Sep-13 00:00  m  11 19 20.254058 -45 40 34.93778
@@ -267,7 +267,7 @@ $$SOE
  2018-Sep-13 02:16     11 17 16.874603 -44 38 20.04553
  2018-Sep-13 02:17     11 17 16.064825 -44 37 53.91743
  2018-Sep-13 02:18     11 17 15.256239 -44 37 27.80913
- 2018-Sep-13 02:19     11 17 14.448841 -44 37 01.72061
+ 2018-Sep-13 02:19     11 17 14.448841 -44 37 01.72062
  2018-Sep-13 02:20     11 17 13.642626 -44 36 35.65190
  2018-Sep-13 02:21     11 17 12.837587 -44 36 09.60299
  2018-Sep-13 02:22     11 17 12.033720 -44 35 43.57388
@@ -408,7 +408,7 @@ $$SOE
  2018-Sep-13 04:37     11 15 32.096680 -43 40 10.11476
  2018-Sep-13 04:38     11 15 31.404095 -43 39 46.73486
  2018-Sep-13 04:39     11 15 30.711982 -43 39 23.37368
- 2018-Sep-13 04:40     11 15 30.020339 -43 39 00.03123
+ 2018-Sep-13 04:40     11 15 30.020338 -43 39 00.03123
  2018-Sep-13 04:41     11 15 29.329159 -43 38 36.70746
  2018-Sep-13 04:42     11 15 28.638438 -43 38 13.40238
  2018-Sep-13 04:43     11 15 27.948172 -43 37 50.11595
@@ -624,7 +624,7 @@ $$SOE
  2018-Sep-13 08:13     11 13 06.477348 -42 22 37.28273
  2018-Sep-13 08:14     11 13 05.793973 -42 22 17.38179
  2018-Sep-13 08:15     11 13 05.110312 -42 21 57.49367
- 2018-Sep-13 08:16     11 13 04.426363 -42 21 37.61833
+ 2018-Sep-13 08:16     11 13 04.426363 -42 21 37.61832
  2018-Sep-13 08:17     11 13 03.742123 -42 21 17.75573
  2018-Sep-13 08:18     11 13 03.057591 -42 20 57.90586
  2018-Sep-13 08:19     11 13 02.372766 -42 20 38.06866
@@ -852,7 +852,7 @@ Computations by ...
     Connect     : browser        https://ssd.jpl.nasa.gov/horizons/app.html#/x
                   API            https://ssd-api.jpl.nasa.gov/doc/horizons.html
                   command-line   telnet ssd.jpl.nasa.gov 6775
-                  e-mail/batch   https://ssd.jpl.nasa.gov/ftp/ssd/horizons_batch.txt
+                  e-mail/batch   https://ssd.jpl.nasa.gov/ftp/ssd/hrzn_batch.txt
                   scripts        https://ssd.jpl.nasa.gov/ftp/ssd/SCRIPTS
     Author      : Jon.D.Giorgini@jpl.nasa.gov
 

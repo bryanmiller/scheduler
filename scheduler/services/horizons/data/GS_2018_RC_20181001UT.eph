@@ -1,5 +1,5 @@
 *******************************************************************************
-Ephemeris / WWW_USER Mon Apr  7 08:42:21 2025 Pasadena, USA      / Horizons    
+Ephemeris / WWW_USER Thu May 23 08:24:13 2024 Pasadena, USA      / Horizons    
 *******************************************************************************
 Target body name: (2018 RC)                       {source: JPL#21}
 Center body name: Earth (399)                     {source: DE441}
@@ -25,8 +25,8 @@ RA format       : HMS
 Time format     : CAL 
 Calendar mode   : Mixed Julian/Gregorian
 RTS-only print  : NO       
-EOP file        : eop.250404.p250701                                           
-EOP coverage    : DATA-BASED 1962-JAN-20 TO 2025-APR-04. PREDICTS-> 2025-JUN-30
+EOP file        : eop.240522.p240815                                           
+EOP coverage    : DATA-BASED 1962-JAN-20 TO 2024-MAY-22. PREDICTS-> 2024-AUG-14
 Units conversion: 1 au= 149597870.700 km, c= 299792.458 km/s, 1 day= 86400.0 s 
 Table cut-offs 1: Elevation (-90.0deg=NO ),Airmass (>38.000=NO), Daylight (YES)
 Table cut-offs 2: Solar elongation (  0.0,180.0=NO ),Local Hour Angle( 0.0=NO )
@@ -262,7 +262,7 @@ $$SOE
  2018-Oct-01 02:21     13 14 55.647626 +01 30 54.94849
  2018-Oct-01 02:22     13 14 55.644451 +01 30 54.98072
  2018-Oct-01 02:23     13 14 55.641381 +01 30 55.01298
- 2018-Oct-01 02:24     13 14 55.638414 +01 30 55.04526
+ 2018-Oct-01 02:24     13 14 55.638413 +01 30 55.04526
  2018-Oct-01 02:25     13 14 55.635550 +01 30 55.07757
  2018-Oct-01 02:26     13 14 55.632788 +01 30 55.10992
  2018-Oct-01 02:27     13 14 55.630129 +01 30 55.14229
@@ -463,7 +463,7 @@ $$SOE
  2018-Oct-01 05:42  m  13 14 56.360405 +01 31 02.15988
  2018-Oct-01 05:43  m  13 14 56.366608 +01 31 02.19999
  2018-Oct-01 05:44  m  13 14 56.372794 +01 31 02.24014
- 2018-Oct-01 05:45  m  13 14 56.378963 +01 31 02.28034
+ 2018-Oct-01 05:45  m  13 14 56.378963 +01 31 02.28033
  2018-Oct-01 05:46  m  13 14 56.385113 +01 31 02.32057
  2018-Oct-01 05:47  m  13 14 56.391244 +01 31 02.36086
  2018-Oct-01 05:48  m  13 14 56.397355 +01 31 02.40119
@@ -820,7 +820,7 @@ Computations by ...
     Connect     : browser        https://ssd.jpl.nasa.gov/horizons/app.html#/x
                   API            https://ssd-api.jpl.nasa.gov/doc/horizons.html
                   command-line   telnet ssd.jpl.nasa.gov 6775
-                  e-mail/batch   https://ssd.jpl.nasa.gov/ftp/ssd/horizons_batch.txt
+                  e-mail/batch   https://ssd.jpl.nasa.gov/ftp/ssd/hrzn_batch.txt
                   scripts        https://ssd.jpl.nasa.gov/ftp/ssd/SCRIPTS
     Author      : Jon.D.Giorgini@jpl.nasa.gov
 

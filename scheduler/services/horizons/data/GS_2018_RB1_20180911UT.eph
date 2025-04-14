@@ -1,5 +1,5 @@
 *******************************************************************************
-Ephemeris / WWW_USER Mon Apr  7 08:43:55 2025 Pasadena, USA      / Horizons    
+Ephemeris / WWW_USER Thu May 23 17:16:04 2024 Pasadena, USA      / Horizons    
 *******************************************************************************
 Target body name: (2018 RB1)                      {source: JPL#5}
 Center body name: Earth (399)                     {source: DE441}
@@ -25,8 +25,8 @@ RA format       : HMS
 Time format     : CAL 
 Calendar mode   : Mixed Julian/Gregorian
 RTS-only print  : NO       
-EOP file        : eop.250404.p250701                                           
-EOP coverage    : DATA-BASED 1962-JAN-20 TO 2025-APR-04. PREDICTS-> 2025-JUN-30
+EOP file        : eop.240523.p240816                                           
+EOP coverage    : DATA-BASED 1962-JAN-20 TO 2024-MAY-23. PREDICTS-> 2024-AUG-15
 Units conversion: 1 au= 149597870.700 km, c= 299792.458 km/s, 1 day= 86400.0 s 
 Table cut-offs 1: Elevation (-90.0deg=NO ),Airmass (>38.000=NO), Daylight (YES)
 Table cut-offs 2: Solar elongation (  0.0,180.0=NO ),Local Hour Angle( 0.0=NO )
@@ -713,7 +713,7 @@ $$SOE
  2018-Sep-11 09:41 A   18 02 46.018395 -38 19 50.89201
  2018-Sep-11 09:42 A   18 02 38.214866 -38 20 29.56488
  2018-Sep-11 09:43 A   18 02 30.408881 -38 21 08.22310
- 2018-Sep-11 09:44 A   18 02 22.600433 -38 21 46.86666
+ 2018-Sep-11 09:44 A   18 02 22.600432 -38 21 46.86666
  2018-Sep-11 09:45 A   18 02 14.789514 -38 22 25.49556
  2018-Sep-11 09:46 A   18 02 06.976118 -38 23 04.10980
  2018-Sep-11 09:47 A   18 01 59.160238 -38 23 42.70936
@@ -856,7 +856,7 @@ Computations by ...
     Connect     : browser        https://ssd.jpl.nasa.gov/horizons/app.html#/x
                   API            https://ssd-api.jpl.nasa.gov/doc/horizons.html
                   command-line   telnet ssd.jpl.nasa.gov 6775
-                  e-mail/batch   https://ssd.jpl.nasa.gov/ftp/ssd/horizons_batch.txt
+                  e-mail/batch   https://ssd.jpl.nasa.gov/ftp/ssd/hrzn_batch.txt
                   scripts        https://ssd.jpl.nasa.gov/ftp/ssd/SCRIPTS
     Author      : Jon.D.Giorgini@jpl.nasa.gov
 
