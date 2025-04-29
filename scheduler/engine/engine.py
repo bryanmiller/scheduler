@@ -391,11 +391,11 @@ class Engine:
 
         tn0 = time.time()
         for night_idx in sorted(self.params.night_indices):
-            print(f'Night {night_idx} start')
+            print(f'Night {night_idx + 1} start')
             for site in sorted(self.params.sites, key=lambda site: site.name):
                 self._schedule(scp, nightly_timeline, site, night_idx, initial_variants, next_update)
             tn1 = time.time()
-            print(f'Night {night_idx} scheduled in {(tn1 - tn0) / 60.} min')
+            print(f'Night {night_idx + 1} scheduled in {(tn1 - tn0) / 60.} min')
             tn0 = tn1
 
         # TODO: Add plan summary to nightlyTimeline
