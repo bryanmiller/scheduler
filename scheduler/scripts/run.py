@@ -49,8 +49,8 @@ def main(*,
     engine = Engine(params)
     plan_summary, timelines = engine.run()
     # File output for future results comparison
-    # outpath = os.path.join(os.environ['HOME'], 'gemini', 'sciops', 'softdevel', 'Queue_planning', 'sched_output')
-    # timelines.display(output=os.path.join(outpath, 'gsched-796b_3min_s20180801_20250430b.txt'))
+    outpath = os.path.join(os.environ['HOME'], 'gemini', 'sciops', 'softdevel', 'Queue_planning', 'sched_output')
+    timelines.display(output=os.path.join(outpath, 'gsched-796b_1min_s20180801_20250502.txt'))
     # Display to stdout
     timelines.display()
 
