@@ -2,7 +2,7 @@
 # For license information see LICENSE or https://opensource.org/licenses/BSD-3-Clause
 
 import asyncio
-# import os
+import os
 import time
 from pathlib import Path
 
@@ -36,9 +36,9 @@ def main(*,
 
     # Create Parameters
     params = SchedulerParameters(start=Time("2018-08-01 08:00:00", format='iso', scale='utc'),
-                                 end=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
-    # params=SchedulerParameters(start=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
-    #                              end=Time("2018-10-03 08:00:00", format='iso', scale='utc'),
+                                  end=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
+    # params=SchedulerParameters(start=Time("2018-08-01 08:00:00", format='iso', scale='utc'),
+    #                              end=Time("2019-01-30 08:00:00", format='iso', scale='utc'),
                                  sites=ALL_SITES,
                                  mode=SchedulerModes.VALIDATION,
                                  ranker_parameters=RankerParameters(),
@@ -49,7 +49,8 @@ def main(*,
     engine = Engine(params)
     plan_summary, timelines = engine.run()
     # File output for future results comparison
-    # timelines.display(output=os.path.join(os.environ['HOME'], 'Downloads', 'plans.txt'))
+    # outpath = os.path.join(os.environ['HOME'], 'gemini', 'sciops', 'softdevel', 'Queue_planning', 'sched_output')
+    # timelines.display(output=os.path.join(outpath, 'gsched-796b_3min_s20180801_20250430b.txt'))
     # Display to stdout
     timelines.display()
 

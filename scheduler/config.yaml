@@ -1,7 +1,7 @@
 collector:
   observation_classes: [SCIENCE, PROGCAL, PARTNERCAL]
   program_types: [Q, LP, FT, DD]
-  time_slot_length: 1.0 # on minutes
+  time_slot_length: 3.0 # minutes
   with_redis: false
 
 optimizer:
