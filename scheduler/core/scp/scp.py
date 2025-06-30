@@ -3,6 +3,7 @@
 
 from dataclasses import dataclass
 from typing import final
+import time
 
 import numpy.typing as npt
 from lucupy.minimodel import Site, NightIndex, TimeslotIndex
@@ -41,15 +42,20 @@ class SCP:
             site: Site,
             night_indices: npt.NDArray[NightIndex],
             current_timeslot: TimeslotIndex) -> Plans:
+        ts0 = time.time()
         selection = self.selector.select(night_indices=night_indices,
                                          sites=frozenset([site]),
                                          starting_time_slots={site: {night_idx: current_timeslot
                                                                      for night_idx in night_indices}},
                                          ranker=self.ranker)
+        print(f'\t\tSelection created in {time.time() - ts0} sec')
+
         # Right now the optimizer generates List[Plans], a list of plans indexed by
         # every night in the selection. We only want the first one, which corresponds
         # to the current night index we are looping over.
         # _logger.debug(f'Running optimizer for {site.site_name} for night {night_idx} '
         #               f'starting at time slot {current_timeslot}.')
+        top0 = time.time()
         plans = self.optimizer.schedule(selection)[0]
+        print(f'\t\tGM plan created in {time.time() - top0} sec')
         return plans
