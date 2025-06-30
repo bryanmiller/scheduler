@@ -3,6 +3,7 @@
 
 import asyncio
 import os
+import time
 from pathlib import Path
 
 from astropy.time import Time
@@ -34,20 +35,26 @@ def main(*,
         programs_list = [line.strip() for line in file if line.strip()[0] != '#']
 
     # Create Parameters
-    params = SchedulerParameters(start=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
-                                 end=Time("2018-10-03 08:00:00", format='iso', scale='utc'),
-                                 sites=ALL_SITES,
-                                 mode=SchedulerModes.VALIDATION,
-                                 ranker_parameters=RankerParameters(),
-                                 semester_visibility=False,
-                                 num_nights_to_schedule=1,
-                                 programs_list=programs_list)
+    # params = SchedulerParameters(start=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
+    #                              end=Time("2018-10-03 08:00:00", format='iso', scale='utc'),
+    params=SchedulerParameters(start=Time("2018-08-01 08:00:00", format='iso', scale='utc'),
+                               end=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
+                               sites=ALL_SITES,
+                               mode=SchedulerModes.VALIDATION,
+                               ranker_parameters=RankerParameters(),
+                               semester_visibility=False,
+                               num_nights_to_schedule=10,
+                               programs_list=programs_list)
     engine = Engine(params)
     plan_summary, timelines = engine.schedule()
     # File output for future results comparison
-    # timelines.display(output=os.path.join(os.environ['HOME'], 'Downloads', 'plans.txt'))
+    outpath = os.path.join(os.environ['HOME'], 'gemini', 'sciops', 'softdevel', 'Queue_planning', 'sched_output')
+    timelines.display(output=os.path.join(outpath, 'dev_1min_s20180801_20250624.txt'))
     # Display to stdout
     timelines.display()
 
 if __name__ == '__main__':
-    main()
+    t0 = time.time()
+    main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.redis.txt')
+    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.txt')
+    print(f'Completed in {(time.time() - t0) / 60.} min')
