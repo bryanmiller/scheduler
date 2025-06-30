@@ -2,6 +2,7 @@
 # For license information see LICENSE or https://opensource.org/licenses/BSD-3-Clause
 
 from typing import Tuple
+import time
 
 from astropy.time import Time
 
@@ -60,6 +61,7 @@ class Engine:
             for site in self.params.sites
         }
 
+        t0 = time.time()
         collector = builder.build_collector(start=self.params.start,
                                             end=self.params.end_vis,
                                             num_of_nights=self.params.num_nights_to_schedule,
@@ -68,6 +70,8 @@ class Engine:
                                             blueprint=Blueprints.collector,
                                             night_times=night_times,
                                             program_list=self.params.programs_list)
+        t1 = time.time()
+        print(f'Collector built in {(t1 - t0) / 60.} min')
 
         selector = builder.build_selector(collector=collector,
                                           num_nights_to_schedule=self.params.num_nights_to_schedule,
@@ -175,16 +179,15 @@ class Engine:
         queue = EventQueue(self.params.night_indices, self.params.sites)
         self._setup(scp, queue)
         event_cycle = EventCycle(self.params, queue, scp)
-        # tn0 = time()
+        tn0 = time.time()
         for night_idx in sorted(self.params.night_indices):
-            # print(f'Engine: starting night {night_idx + 1}: {scp.collector.time_grid[night_idx]}')
+            print(f'Night {night_idx + 1} start')
             for site in sorted(self.params.sites, key=lambda site: site.name):
                 event_cycle.run(site, night_idx, nightly_timeline)
                 nightly_timeline.calculate_time_losses(night_idx, site)
-            # tn1 = time()
-            # print(f'Night {night_idx + 1} scheduled in {(tn1 - tn0) / 60.} min')
-            # nightly_timeline.display(night_idx_sel=night_idx)
-            # tn0 = tn1
+            tn1 = time.time()
+            print(f'Night {night_idx + 1} scheduled in {(tn1 - tn0) / 60.} min')
+            tn0 = tn1
 
         # TODO: Add plan summary to nightlyTimeline
         run_summary = StatCalculator.calculate_timeline_stats(nightly_timeline,
