@@ -48,7 +48,7 @@ class SCP:
                                          starting_time_slots={site: {night_idx: current_timeslot
                                                                      for night_idx in night_indices}},
                                          ranker=self.ranker)
-        print(f'\t\tSelection created in {time.time() - ts0} sec')
+        # print(f'\t\tSelection created in {time.time() - ts0} sec')
 
         # Right now the optimizer generates List[Plans], a list of plans indexed by
         # every night in the selection. We only want the first one, which corresponds
@@ -57,5 +57,5 @@ class SCP:
         #               f'starting at time slot {current_timeslot}.')
         top0 = time.time()
         plans = self.optimizer.schedule(selection)[0]
-        print(f'\t\tGM plan created in {time.time() - top0} sec')
+        # print(f'\t\tGM plan created in {time.time() - top0} sec')
         return plans

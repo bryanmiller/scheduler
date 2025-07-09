@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 
 from astropy.time import Time
-from lucupy.minimodel.site import ALL_SITES
+from lucupy.minimodel.site import ALL_SITES, Site
 from lucupy.observatory.abstract import ObservatoryProperties
 from lucupy.observatory.gemini import GeminiProperties
 
@@ -37,9 +37,10 @@ def main(*,
     # Create Parameters
     # params = SchedulerParameters(start=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
     #                              end=Time("2018-10-03 08:00:00", format='iso', scale='utc'),
-    params=SchedulerParameters(start=Time("2018-08-01 08:00:00", format='iso', scale='utc'),
-                               end=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
-                               sites=ALL_SITES,
+    params=SchedulerParameters(start=Time("2019-01-02 08:00:00", format='iso', scale='utc'),
+                               end=Time("2019-01-31 08:00:00", format='iso', scale='utc'),
+                               # sites=ALL_SITES,
+                               sites=[Site.GN],
                                mode=SchedulerModes.VALIDATION,
                                ranker_parameters=RankerParameters(),
                                semester_visibility=False,
@@ -49,12 +50,13 @@ def main(*,
     plan_summary, timelines = engine.schedule()
     # File output for future results comparison
     outpath = os.path.join(os.environ['HOME'], 'gemini', 'sciops', 'softdevel', 'Queue_planning', 'sched_output')
-    timelines.display(output=os.path.join(outpath, 'dev_1min_s20180801_20250624.txt'))
+    timelines.display(output=os.path.join(outpath, 'dev_gn_s20190102_20250708b.txt'))
     # Display to stdout
     timelines.display()
 
 if __name__ == '__main__':
     t0 = time.time()
-    main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.redis.txt')
+    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.redis.txt')
+    main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids_gn.redis.txt')
     # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.txt')
     print(f'Completed in {(time.time() - t0) / 60.} min')
