@@ -8,6 +8,7 @@ from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from astropy.time import Time
 from lucupy.minimodel.site import ALL_SITES
 from lucupy.observatory.abstract import ObservatoryProperties
 from lucupy.observatory.gemini import GeminiProperties
@@ -27,8 +28,9 @@ def main(*,
 
     # Set lucupy to Gemini
     ObservatoryProperties.set_properties(GeminiProperties)
-        # Grab visibility calculations from Reddit
-    # asyncio.run(visibility_calculator.calculate())
+
+    # Grab visibility calculations from Reddit
+    asyncio.run(visibility_calculator.calculate())
 
     # Parsed program file (this replaces the program picker from Schedule)
     with open(programs_ids, 'r') as file:
