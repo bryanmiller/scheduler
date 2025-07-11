@@ -56,7 +56,7 @@ class RankerParameters:
     program_priority: float = 10.0
     priority_factor: float = 8.0
     preimaging_factor: float = 1.25
-    ongoing_factor: float = 1.25
+    ongoing_factor: float = 1.5
     # altitude_limits: Dict[Site, Dict[MinMax, Angle]] = field(default_factory=lambda: _def_alt_limits_site)
     gs_altitude_limits: Dict[MinMax, Angle] = field(default_factory=lambda: _def_alt_limits)
     gn_altitude_limits: Dict[MinMax, Angle] = field(default_factory=lambda: _def_alt_limits)
