@@ -37,22 +37,24 @@ def main(*,
     # Create Parameters
     # params = SchedulerParameters(start=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
     #                              end=Time("2018-10-03 08:00:00", format='iso', scale='utc'),
-    # params=SchedulerParameters(start=Time("2018-08-01 08:00:00", format='iso', scale='utc'),
+    params = SchedulerParameters(start=Time("2018-12-15 08:00:00", format='iso', scale='utc'),
+                                 end=Time("2018-12-20 08:00:00", format='iso', scale='utc'),
+                                     # params=SchedulerParameters(start=Time("2018-08-01 08:00:00", format='iso', scale='utc'),
     #                            end=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
-    params=SchedulerParameters(start=Time("2019-01-02 08:00:00", format='iso', scale='utc'),
-                              end=Time("2019-01-31 08:00:00", format='iso', scale='utc'),
+    # params=SchedulerParameters(start=Time("2019-01-02 08:00:00", format='iso', scale='utc'),
+    #                           end=Time("2019-01-31 08:00:00", format='iso', scale='utc'),
                               # sites=ALL_SITES,
                                sites=[Site.GN],
                                mode=SchedulerModes.VALIDATION,
-                               ranker_parameters=RankerParameters(),
+                               ranker_parameters=RankerParameters(vis_power=1.0, air_power=0.0),
                                semester_visibility=False,
-                               num_nights_to_schedule=10,
+                               num_nights_to_schedule=3,
                                programs_list=programs_list)
     engine = Engine(params)
     plan_summary, timelines = engine.schedule()
     # File output for future results comparison
     outpath = os.path.join(os.environ['HOME'], 'gemini', 'sciops', 'softdevel', 'Queue_planning', 'sched_output')
-    timelines.display(output=os.path.join(outpath, 'dev_gn_s20190102_20250708d.txt'))
+    timelines.display(output=os.path.join(outpath, 'dev_niri_s20181001_20250715.txt'))
     # timelines.display(output=os.path.join(outpath, 'dev_1m_s20180801_20250711.txt'))
     # Display to stdout
     timelines.display()
@@ -60,6 +62,6 @@ def main(*,
 if __name__ == '__main__':
     t0 = time.time()
     # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.redis.txt')
-    main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids_gn.redis.txt')
-    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.txt')
+    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids_gn.redis.txt')
+    main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.txt')
     print(f'Completed in {(time.time() - t0) / 60.} min')
