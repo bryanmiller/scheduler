@@ -27,7 +27,6 @@ class CreateNewScheduleInput:
     met_power: Optional[float] = 1.0
     vis_power: Optional[float] = 1.0
     wha_power: Optional[float] = 1.0
-    air_power: Optional[float] = 0.0
     programs: Optional[List[str]] = None
 
 
