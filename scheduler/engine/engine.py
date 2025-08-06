@@ -2,7 +2,7 @@
 # For license information see LICENSE or https://opensource.org/licenses/BSD-3-Clause
 
 from typing import Tuple
-import time
+# import time
 
 from lucupy.timeutils import time2slots
 
@@ -53,7 +53,7 @@ class Engine:
         # Create builder based in the mode to create SCP
         builder = dispatch_with(self.params.mode, self.sources, self.queue)
 
-        t0 = time.time()
+        t0 = time()
         collector = builder.build_collector(start=self.params.start,
                                             end=self.params.end_vis,
                                             num_of_nights=self.params.num_nights_to_schedule,
@@ -61,7 +61,7 @@ class Engine:
                                             semesters=self.params.semesters,
                                             blueprint=Blueprints.collector,
                                             program_list=self.params.programs_list)
-        t1 = time.time()
+        t1 = time()
         print(f'Collector built in {(t1 - t0) / 60.} min')
 
         selector = builder.build_selector(collector=collector,
@@ -170,13 +170,13 @@ class Engine:
         queue = EventQueue(self.params.night_indices, self.params.sites)
         self._setup(scp, queue)
         event_cycle = EventCycle(self.params, queue, scp)
-        tn0 = time.time()
+        tn0 = time()
         for night_idx in sorted(self.params.night_indices):
             print(f'Night {night_idx + 1} start')
             for site in sorted(self.params.sites, key=lambda site: site.name):
                 event_cycle.run(site, night_idx, nightly_timeline)
                 nightly_timeline.calculate_time_losses(night_idx, site)
-            tn1 = time.time()
+            tn1 = time()
             print(f'Night {night_idx + 1} scheduled in {(tn1 - tn0) / 60.} min')
             tn0 = tn1
 
