@@ -29,6 +29,7 @@ __all__ = [
 from ..core.components.ranker import DefaultRanker
 
 from ..core.events.cycle.cycle import EventCycle
+from ..core.output import print_collector_info
 
 from ..core.statscalculator.run_summary import RunSummary
 
@@ -69,6 +70,16 @@ class Engine:
                                             program_list=self.params.programs_list)
         t1 = time()
         print(f'Collector built in {(t1 - t0) / 60.} min')
+
+        # print_collector_info(collector)
+        # print(collector.get_program_ids())
+        from lucupy.minimodel import ProgramID, Band
+        p = collector.get_program(ProgramID('G-2025B-1034-D'))
+        # print(p.id, p.internal_id, p.type)
+        # print(f"Start: {p.start}, End: {p.end}")
+        # print(f"Total used: {p.total_used()}")
+        # print(f"Program used: {p.program_used()}, Band 1: {p.program_used(Band(1))}")
+        p.show()
 
         selector = builder.build_selector(collector=collector,
                                           num_nights_to_schedule=self.params.num_nights_to_schedule,
@@ -178,7 +189,7 @@ class Engine:
         event_cycle = EventCycle(self.params, queue, scp)
         tn0 = time()
         for night_idx in sorted(self.params.night_indices):
-            print(f'Night {night_idx + 1} start')
+            print(f'Engine: starting night {night_idx + 1}')
             for site in sorted(self.params.sites, key=lambda site: site.name):
                 event_cycle.run(site, night_idx, nightly_timeline)
                 nightly_timeline.calculate_time_losses(night_idx, site)
