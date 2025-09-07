@@ -43,7 +43,7 @@ def main(*,
                                mode=SchedulerModes.SIMULATION,
                                ranker_parameters=RankerParameters(vis_power=1.0, air_power=0.0),
                                semester_visibility=False,
-                               num_nights_to_schedule=1,
+                               num_nights_to_schedule=2,
                                programs_list=programs_list)
     engine = Engine(params)
     plan_summary, timelines = engine.schedule()
