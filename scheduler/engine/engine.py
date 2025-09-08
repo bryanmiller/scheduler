@@ -74,7 +74,7 @@ class Engine:
         # print_collector_info(collector)
         # print(collector.get_program_ids())
         from lucupy.minimodel import ProgramID, Band
-        p = collector.get_program(ProgramID('G-2025B-1034-D'))
+        p = collector.get_program(ProgramID('G-2025B-1066-D'))
         # print(p.id, p.internal_id, p.type)
         # print(f"Start: {p.start}, End: {p.end}")
         # print(f"Total used: {p.total_used()}")
