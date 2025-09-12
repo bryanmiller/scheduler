@@ -264,7 +264,7 @@ class Collector(SchedulerComponent):
         else:
             windows = []
             for tw in obs.constraints.timing_windows:
-                # The start time is now already an astropy Time
+                # The start time must be an astropy Time
                 begin = tw.start
                 duration = tw.duration.total_seconds() / 3600.0 * u.h
                 repeat = max(1, tw.repeat)
