@@ -55,6 +55,9 @@ def main(*,
     # Display to stdout
     timelines.display()
 
+    # plot_stats(plan_summary, output=os.path.join(outpath, 'gn_s20180802_180_vp0p5_ap1_20250826.png'))
+
+
 if __name__ == '__main__':
     t0 = time.time()
     main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.redis.txt')
