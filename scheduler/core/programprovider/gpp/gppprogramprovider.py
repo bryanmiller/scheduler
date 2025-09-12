@@ -5,6 +5,7 @@ import traceback
 import asyncio
 from datetime import datetime, timedelta
 from dateutil.parser import parse as parsedt
+from astropy.time import Time
 from os import PathLike
 from pathlib import Path
 from typing import FrozenSet, Iterable, List, Mapping, Optional, Tuple, Dict
@@ -227,13 +228,15 @@ class GppProgramProvider(ProgramProvider):
 
     class _TAKeys:
         # CATEGORIES = 'timeAccountAllocationCategories'
-        CATEGORY = 'partner'
+        CATEGORY = 'category'
         AWARDED_PROG_TIME = 'duration'
         AWARDED_PART_TIME = 'awardedPartnerTime'
         USED_PROG_TIME = 'program'
         USED_PART_TIME = 'partner'
-        NOT_CHARGED_TIME = 'nonCharged'
-        BAND = 'scienceBand'
+        NOT_CHARGED_TIME = 'non_charged'
+        BAND = 'science_band'
+        USED_BAND = 'band'
+
 
     class _GroupKeys:
         ELEMENTS = 'elements'
@@ -496,7 +499,7 @@ class GppProgramProvider(ProgramProvider):
         # ToDo: determine how to handle exclusion windows
 
         return TimingWindow(
-            start=start,
+            start=Time(start),
             duration=duration,
             repeat=repeat,
             period=period)
@@ -647,7 +650,7 @@ class GppProgramProvider(ProgramProvider):
             # Strip off any leading letter, make float
             epoch = float(epoch_str[1:]) if epoch_str[0] in ['B', 'J'] else float(epoch_str)
         except TypeError as e:
-            print(f'Target {name} is missing proper motion')
+            print(f'Target {name} is missing proper motion, setting to 0')
             pm_ra = 0.0
             pm_dec = 0.0
             epoch = 2000.0
@@ -1260,18 +1263,17 @@ class GppProgramProvider(ProgramProvider):
 
     def parse_time_allocation(self, data: dict, band: Band = None) -> TimeAllocation:
         """Time allocations by category and band"""
-        # Todo: category code is not on the gpp data
-        #category = TimeAccountingCode[data[GppProgramProvider._TAKeys.CATEGORY]]
+        category = TimeAccountingCode[data[GppProgramProvider._TAKeys.CATEGORY].value]
         program_awarded = timedelta(hours=data[GppProgramProvider._TAKeys.AWARDED_PROG_TIME]['hours'])
-        partner_awarded = timedelta(hours=0.0)
+        partner_awarded = ZeroTime
 
         if band is None:
-            sciband = Band(int(data['science_band'][-1]))
+            sciband = Band(int(data[GppProgramProvider._TAKeys.BAND].value[-1]))
         else:
             sciband = band
 
         return TimeAllocation(
-            category=None,
+            category=category,
             program_awarded=program_awarded,
             partner_awarded=partner_awarded,
             band=sciband
@@ -1279,16 +1281,18 @@ class GppProgramProvider(ProgramProvider):
 
     def parse_time_used(self, data: dict) -> TimeUsed:
         """Previously used/charged time"""
-        print(data)
-        program_used = timedelta(hours=data[GppProgramProvider._TAKeys.USED_PROG_TIME]['hours'])
-        partner_used = timedelta(hours=data[GppProgramProvider._TAKeys.USED_PART_TIME]['hours'])
-        not_charged = timedelta(hours=data[GppProgramProvider._TAKeys.NOT_CHARGED_TIME]['hours'])
-        # ToDo: include band
+        # print(data)
+        program_used = timedelta(hours=data["time"][GppProgramProvider._TAKeys.USED_PROG_TIME]['hours'])
+        # partner_used = timedelta(hours=data[GppProgramProvider._TAKeys.USED_PART_TIME]['hours'])
+        partner_used = ZeroTime
+        not_charged = timedelta(hours=data["time"][GppProgramProvider._TAKeys.NOT_CHARGED_TIME]['hours'])
+        sciband = Band(int(data[GppProgramProvider._TAKeys.USED_BAND].value[-1]))
 
         return TimeUsed(
             program_used=program_used,
             partner_used=partner_used,
-            not_charged=not_charged
+            not_charged=not_charged,
+            band=sciband
         )
 
     def parse_program(self, data: dict) -> Optional[Program]:
