@@ -71,15 +71,18 @@ class Engine:
         t1 = time()
         print(f'Collector built in {(t1 - t0) / 60.} min')
 
-        # print_collector_info(collector)
-        # print(collector.get_program_ids())
+        # print_collector_info_info(collector)
+        print(f"Collector program ids: {collector.get_program_ids()}")
         from lucupy.minimodel import ProgramID, Band
         # p = collector.get_program(ProgramID('G-2025B-1066-D')) # GPP
-        p = collector.get_program(ProgramID('GN-2018B-Q-101')) # OCS
+        p = collector.get_program(ProgramID('G-2025B-0571-Q')) # GPP
+        # p = collector.get_program(ProgramID('GN-2018B-Q-101')) # OCS
         # print(p.id, p.internal_id, p.type)
         # print(f"Start: {p.start}, End: {p.end}")
+        print(f"Allocated time: {p.allocated_time}")
         # print(f"Total used: {p.total_used()}")
-        # print(f"Program used: {p.program_used()}, Band 1: {p.program_used(Band(1))}")
+        print(f"Program awarded: {p.program_awarded()}, Band 1: {p.program_awarded(Band(1))}")
+        print(f"Program used: {p.program_used()}, Band 1: {p.program_used(Band(1))}")
         p.show()
 
         selector = builder.build_selector(collector=collector,
