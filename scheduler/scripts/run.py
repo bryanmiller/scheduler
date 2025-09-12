@@ -58,6 +58,7 @@ def main(*,
     outpath = os.path.join(os.environ['HOME'], 'gemini', 'sciops', 'softdevel', 'Queue_planning', 'sched_output')
     # timelines.display(output=os.path.join(outpath, 'dev_niri_s20181001_20250715.txt'))
     # timelines.display(output=os.path.join(outpath, 'gn_s20180802_180_vp0p5_ap1_20250826.txt'))
+    timelines.display(output=os.path.join(outpath, 'gn_s20181001_3_20250911.txt'))
     # Display to stdout
     timelines.display()
 
