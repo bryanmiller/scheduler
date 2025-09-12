@@ -14,6 +14,7 @@ from scheduler.core.components.ranker import Ranker
 from scheduler.core.components.selector import Selector
 from scheduler.core.plans import Plans
 from scheduler.services import logger_factory
+from scheduler.core.output import print_selection
 
 _logger = logger_factory.create_logger(__name__)
 
@@ -49,6 +50,17 @@ class SCP:
                                                                      for night_idx in night_indices}},
                                          ranker=self.ranker)
         # print(f'\t\tSelection created in {time.time() - ts0} sec')
+        # print(f"\nSelection")
+        # # print_selection(selection, print_obs=True, print_targ=False, print_atoms=False)
+        # for p in selection.program_info.values():
+        #     p.program.show()
+
+        # night_idx = selection.night_indices[0]
+        # print(f"\nSchedulable Groups")
+        # for group_data in selection.schedulable_groups.values():
+        #     # p = selection.program_info[group_data.group.program_id]
+        #     print(group_data.group.id.id)
+        #     group_data.group.show()
 
         # Right now the optimizer generates List[Plans], a list of plans indexed by
         # every night in the selection. We only want the first one, which corresponds
