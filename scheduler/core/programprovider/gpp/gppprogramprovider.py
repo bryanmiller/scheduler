@@ -13,6 +13,7 @@ from typing import FrozenSet, Iterable, List, Mapping, Optional, Tuple, Dict
 from fontTools.ttLib.tables.otTables import DeltaSetIndexMap
 from gpp_client.api import WhereProgram, WhereEqProposalStatus, ProposalStatus, WhereOrderProgramId
 from gpp_client import GPPClient, GPPDirector
+from scipy.constants import electron_mass
 
 from lucupy.minimodel import (AndOption, Atom, Band, CloudCover, Conditions, Constraints, ElevationType,
                               Group, GroupID, ImageQuality, Magnitude, MagnitudeBands, NonsiderealTarget, Observation,
@@ -20,7 +21,7 @@ from lucupy.minimodel import (AndOption, Atom, Band, CloudCover, Conditions, Con
                               Program, ProgramID, ProgramMode, ProgramTypes, QAState, ResourceType,
                               ROOT_GROUP_ID, Semester, SemesterHalf, SetupTimeType, SiderealTarget, Site, SkyBackground,
                               Target, TargetTag, TargetName, TargetType, TimeAccountingCode, TimeAllocation, TimeUsed,
-                              TimingWindow, TooType, WaterVapor, Wavelength, Resource, UniqueGroupID, ROOT_PARENT_ID)
+                              TimingWindow, TooType, WaterVapor, Wavelength, Resource, UniqueGroupID, GROUP_NONE_ID)
 from lucupy.observatory.gemini.geminiobservation import GeminiObservation
 from lucupy.resource_manager import ResourceManager
 from lucupy.timeutils import sex2dec
@@ -427,11 +428,14 @@ class GppProgramProvider(ProgramProvider):
         id=ROOT_GROUP_ID,
         program_id=ProgramID('Empty'),
         group_name='root',
-        parent_id=ROOT_PARENT_ID,
+        parent_id=GROUP_NONE_ID,
+        previous_id=GROUP_NONE_ID,
+        next_id=GROUP_NONE_ID,
         number_to_observe=1,
         number_observed=0,
-        delay_min=0,
-        delay_max=0,
+        delay_min=ZeroTime,
+        delay_max=ZeroTime,
+        active=True,
         children=[_EMPTY_OBSERVATION],
         group_option=AndOption.CONSEC_ORDERED)
 
@@ -1119,7 +1123,7 @@ class GppProgramProvider(ProgramProvider):
         return None
 
     def parse_group(self, data: dict, program_id: ProgramID, group_id: GroupID,
-                    split: bool, split_by_iterator: bool) -> Optional[Group]:
+                    split: bool, split_by_iterator: bool, active: bool = True) -> Optional[Group]:
         """
         This method parses group information from GPP
         """
@@ -1133,9 +1137,10 @@ class GppProgramProvider(ProgramProvider):
             number_to_observe = len(data['elements'])
             number_observed = 0
             elements_list = data['elements']
-            parent_id = ROOT_PARENT_ID
+            parent_id = GROUP_NONE_ID
             # parent_id = UniqueGroupID(ROOT_GROUP_ID.id)
             parent_index = 0
+            child_active=active
         else:
             group_name = data[GppProgramProvider._GroupKeys.GROUP_NAME]
             group_delay_min = data.get(GppProgramProvider._GroupKeys.DELAY_MIN)
@@ -1188,6 +1193,9 @@ class GppProgramProvider(ProgramProvider):
             # ToDo: this needs to be provided by the ODB
             number_observed = 0
 
+            # Active setting for children
+            child_active = False if (group_option == AndOption.CUSTOM or active == False) else True
+
             # parent_id = unique_group_id(program_id,
             #                                 GroupID(data.get(GppProgramProvider._GroupKeys.PARENT_ID)))
             parent_id = ROOT_GROUP_ID if data.get(GppProgramProvider._GroupKeys.PARENT_ID) is None else \
@@ -1204,13 +1212,18 @@ class GppProgramProvider(ProgramProvider):
 
         # Recursively process the group elements, reversing required to get the order
         # as in Explore
+        elem_parent_index = -1
         for element in elements_list:
             if element['observation']:
-                elem_parent_index = element.get(GppProgramProvider._GroupKeys.PARENT_INDEX)
+                # Not included in observations
+                # elem_parent_index = element.get(GppProgramProvider._GroupKeys.PARENT_INDEX)
+                # Note, this seems to result in reverse order, so maybe not useful...
+                elem_parent_index += 1
                 obs = self.parse_observation(element['observation'], program_id=program_id, num=(0, 0),
                                              split=split, split_by_iterator=split_by_iterator)
                 if obs is not None:
                     # Ignore Twilight observations for now
+                    # ToDo: identify twilight w/o just parsing the title (maybe use title with another param)
                     # ToDo: extend timeline to include twilights
                     if obs.title != 'Twilight':
                         observations.append(obs)
@@ -1218,23 +1231,27 @@ class GppProgramProvider(ProgramProvider):
             elif element['group']:
                 subgroup_id = GroupID(element['group']['id'])
                 subgroup = self.parse_group(element['group'], program_id, subgroup_id, split=split,
-                                            split_by_iterator=split_by_iterator)
+                                            split_by_iterator=split_by_iterator, active=child_active)
                 if subgroup is not None:
                     children.append(subgroup)
 
         # Put all the observations in trivial AND groups and extend the children to include them.
+        obs_parent_indices.reverse() # to get order correct
         trivial_groups = [
             Group(
                 id=GroupID(obs.id.id),
+                program_id=program_id,
+                group_name=obs.title,
                 parent_id=group_id,
                 # parent_id=UniqueGroupID(group_id.id),
                 parent_index=obs_parent_indices[idx_obs],
-                program_id=program_id,
-                group_name=obs.title,
+                previous_id=GROUP_NONE_ID,
+                next_id=GROUP_NONE_ID,
                 number_to_observe=1,
                 number_observed=number_observed,
-                delay_min=None,
-                delay_max=None,
+                delay_min=ZeroTime,
+                delay_max=ZeroTime,
+                active=child_active,
                 children=obs,
                 group_option=AndOption.CONSEC_ORDERED)
             for idx_obs, obs in enumerate(observations)]
@@ -1247,18 +1264,32 @@ class GppProgramProvider(ProgramProvider):
             logger.warning(f"Program {program_id} group {group_id} has no candidate children. Skipping.")
             return None
 
-        # Put all the observations in the one big AND group and return it.
+        # Get previous/next groups in children
+        for idx, child in enumerate(children):
+            if group_id == ROOT_GROUP_ID:
+                child.next_id = GroupID(children[idx + 1].id.id) if idx < len(children) - 1 else GROUP_NONE_ID
+                child.previous_id = GroupID(children[idx - 1].id.id) if idx > 0 else GROUP_NONE_ID
+            else:
+                child.previous_id = GroupID(children[idx + 1].id.id) if idx < len(children) - 1 else GROUP_NONE_ID
+                child.next_id = GroupID(children[idx - 1].id.id) if idx > 0 else GROUP_NONE_ID
+                if group_option == AndOption.CUSTOM and child.previous_id == GROUP_NONE_ID and active != False:
+                    child.active = True
+
+        # Put all the observations in the one big group and return it.
         return Group(
             id=group_id,
-            parent_id=parent_id,
-            parent_index=parent_index,
             program_id=program_id,
             group_name=group_name,
+            parent_id=parent_id,
+            parent_index=parent_index,
+            previous_id=GROUP_NONE_ID,
+            next_id=GROUP_NONE_ID,
             number_to_observe=number_to_observe,
             number_observed=number_observed,
             delay_min=delay_min,
             delay_max=delay_max,
-            children=list(reversed(children)),  # to get the order correct
+            active=active,
+            children=list(children) if group_id == ROOT_GROUP_ID else list(reversed(children)),  # to get the order correct
             group_option=group_option)
 
     def parse_time_allocation(self, data: dict, band: Band = None) -> TimeAllocation:
@@ -1353,19 +1384,9 @@ class GppProgramProvider(ProgramProvider):
         else:
             program_mode = ProgramMode['QUEUE']  # Need a separate field to specify PV
 
-        # Band
-        # band = Band(1)  # Should be an allocation by band, then the band is set for each observation
-        # try:
-        #     band = Band(int(data[GppProgramProvider._ProgramKeys.BAND]))
-        # except ValueError:
-        #     # Treat classical as Band 1, other types as Band 2
-        #     if program_mode == ProgramMode.CLASSICAL:
-        #         band = Band(1)
-        #     else:
-        #         band = Band(2)
+        # ToDo: determine thesis status from ODB information
         thesis = False
         # thesis = data[GppProgramProvider._ProgramKeys.THESIS]
-        # print(f'\t program_mode = {program_mode}, band = {band}')
 
         # Determine the start and end date of the program.
         # NOTE that this includes the fuzzy boundaries.
@@ -1379,8 +1400,7 @@ class GppProgramProvider(ProgramProvider):
         time_act_alloc_data = data[GppProgramProvider._ProgramKeys.TIME_ACCOUNT_ALLOCATION]
         time_act_alloc = frozenset(self.parse_time_allocation(ta_data) for ta_data in time_act_alloc_data)
 
-        # Previous time used - eventually loop over bands
-
+        # Parse time previously used by previously observed observations not in the query
         time_used = frozenset([self.parse_time_used(tc) for tc in data[GppProgramProvider._ProgramKeys.TIME_CHARGE]])
 
         # ToOs

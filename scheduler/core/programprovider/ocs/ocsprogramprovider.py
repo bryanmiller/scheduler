@@ -18,7 +18,7 @@ from lucupy.minimodel import (AndOption, Atom, Band, CloudCover, Conditions, Con
                               Program, ProgramID, ProgramMode, ProgramTypes, QAState, ResourceType,
                               ROOT_GROUP_ID, Semester, SemesterHalf, SetupTimeType, SiderealTarget, Site, SkyBackground,
                               Target, TargetTag, TargetName, TargetType, TimeAccountingCode, TimeAllocation, TimeUsed,
-                              TimingWindow, TooType, WaterVapor, Wavelength, ROOT_PARENT_ID)
+                              TimingWindow, TooType, WaterVapor, Wavelength, GROUP_NONE_ID)
 from lucupy.observatory.gemini.geminiobservation import GeminiObservation
 from lucupy.resource_manager import ResourceManager
 from lucupy.timeutils import sex2dec
@@ -1425,7 +1425,7 @@ class OcsProgramProvider(ProgramProvider):
         # 3. A list of Observations for each Organizational Folder.
         # We can treat (1) the same as (2) and (3) by simply passing all the JSON
         # data to the parse_and_group method.
-        root_group = self.parse_group(data, program_id, ROOT_GROUP_ID, ROOT_PARENT_ID, band=band,
+        root_group = self.parse_group(data, program_id, ROOT_GROUP_ID, GROUP_NONE_ID, band=band,
                                           split=split, split_by_iterator=split_by_iterator)
         if root_group is None:
             logger.debug(f'Program {program_id} has empty root group. Skipping.')

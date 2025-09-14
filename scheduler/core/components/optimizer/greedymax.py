@@ -12,7 +12,7 @@ import numpy as np
 import numpy.typing as npt
 from lucupy.minimodel import (Group, NightIndex, Observation, ObservationClass, ObservationID, ObservationStatus,
                               Program, QAState, Site, UniqueGroupID, Wavelengths, ObservationMode,
-                              unique_group_id, AndOption, ROOT_PARENT_ID)
+                              unique_group_id, AndOption, GROUP_NONE_ID)
 
 from lucupy.observatory.abstract import ObservatoryProperties
 from lucupy.timeutils import time2slots
@@ -289,7 +289,7 @@ class GreedyMaxOptimizer(BaseOptimizer):
         # Make a list of scores in the remaining groups
         for group_data in self.group_data_list:
             site = group_data.group.observations()[0].site
-            if not self.timelines[plans.night_idx][site].is_full:
+            if not self.timelines[plans.night_idx][site].is_full and group_data.group.active:
                 for interval_idx, interval in enumerate(open_intervals[site]):
                     # print(f'Interval: {iint}')
                     # scores = group_data.group_info.scores[plans.night]
@@ -804,7 +804,6 @@ class GreedyMaxOptimizer(BaseOptimizer):
                     schedulable_group.group_info.scores = group_info.scores
                     # schedulable_group.group_info.scores[:] = group_info.scores[:]
                 # print(f"\tUpdated max score: {np.max(schedulable_group.group_info.scores[night_idx]):7.2f}")
-        return None
 
 
     def _update_group_list(self, max_group_info: MaxGroup):
@@ -827,8 +826,6 @@ class GreedyMaxOptimizer(BaseOptimizer):
                 for child in group.children:
                     trim_tree(child)
 
-            return
-
 
         def traverse_group_tree(prog_info: ProgramInfo, group: Group, depth: int = 1) -> None:
             """Traverse parent groups (up, then down each branch) starting at the given group"""
@@ -844,13 +841,11 @@ class GreedyMaxOptimizer(BaseOptimizer):
                 trim_tree(group, depth=depth+1)
 
             # If not at the root group, get parent info and move up the tree
-            if group.parent_id != ROOT_PARENT_ID:
+            if group.parent_id != GROUP_NONE_ID:
                 parent_unique_id = unique_group_id(prog_info.program.id, group.parent_id)
                 parent = prog_info.program.get_group(parent_unique_id)
                 # subgroup = prog_info.group_data_map[parent]
                 traverse_group_tree(prog_info, parent)
-
-            return
 
         # Remove group from list if completely observed
         # print(f"update_group_list")
@@ -862,8 +857,6 @@ class GreedyMaxOptimizer(BaseOptimizer):
         # p.program.show()
 
         traverse_group_tree(p, max_group_info.group_data.group)
-
-        return
 
 
     def _run(self, plans: Plans) -> None:
@@ -1086,7 +1079,7 @@ class GreedyMaxOptimizer(BaseOptimizer):
 
             # TODO: Shift to remove any gaps in the plan?
 
-            # Re-score program (pseudo time accounting)
+            # Re-score program after pseudo-time accounting in _add_visit
             # print(f'Rescore {program.id}')
             self._update_score(program, night_idx=night_idx)
 
