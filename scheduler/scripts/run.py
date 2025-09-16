@@ -44,8 +44,8 @@ def main(*,
     #                            end=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
     # params=SchedulerParameters(start=Time("2018-08-02 08:00:00", format='iso', scale='utc'),
     #                           end=Time("2019-01-31 08:00:00", format='iso', scale='utc'),
-                              # sites=ALL_SITES,
-                               sites=[Site.GN],
+                              sites=ALL_SITES,
+                              #  sites=[Site.GN],
                                mode=SchedulerModes.VALIDATION,
                                ranker_parameters=RankerParameters(),
                                # ranker_parameters=RankerParameters(vis_power=0.5, air_power=1.0),
@@ -58,7 +58,7 @@ def main(*,
     outpath = os.path.join(os.environ['HOME'], 'gemini', 'sciops', 'softdevel', 'Queue_planning', 'sched_output')
     # timelines.display(output=os.path.join(outpath, 'dev_niri_s20181001_20250715.txt'))
     # timelines.display(output=os.path.join(outpath, 'gn_s20180802_180_vp0p5_ap1_20250826.txt'))
-    timelines.display(output=os.path.join(outpath, 'gn_s20181001_3_20250911.txt'))
+    # timelines.display(output=os.path.join(outpath, 'gn_s20181001_3_20250911.txt'))
     # Display to stdout
     timelines.display()
 
