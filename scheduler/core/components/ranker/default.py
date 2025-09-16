@@ -269,6 +269,8 @@ class DefaultRanker(Ranker):
                                               np.array([obs.band.value]),
                                               np.array([0.8]),
                                               program.thesis)
+        # print(f"Scoring {obs.id.id}: used={program.total_used(obs.band)}, remaining={remaining}, cplt={cplt}, "
+        #       f"metric={metric[0]}")
 
         # Declination for the base target per night.
         dec = {night_idx: target_info[night_idx].coord.dec for night_idx in night_indices}

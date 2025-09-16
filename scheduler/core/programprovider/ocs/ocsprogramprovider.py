@@ -1349,13 +1349,16 @@ class OcsProgramProvider(ProgramProvider):
         trivial_groups = [
             Group(
                 id=GroupID(obs.id.id),
-                parent_id=group_id,
                 program_id=program_id,
                 group_name=obs.title,
+                parent_id=group_id,
+                previous_id=GROUP_NONE_ID,
+                next_id=GROUP_NONE_ID,
                 number_to_observe=1,
                 number_observed=0,
                 delay_min=delay_min,
                 delay_max=delay_max,
+                active=True,
                 children=obs,
                 group_option=group_option)
             for obs in observations]
@@ -1367,18 +1370,26 @@ class OcsProgramProvider(ProgramProvider):
             logger.debug(f"Program {program_id} group {group_id} has no candidate children. Skipping.")
             return None
 
+
+        # Get previous/next groups in children
+        for idx, child in enumerate(children):
+            child.next_id = GroupID(children[idx + 1].id.id) if idx < len(children) - 1 else GROUP_NONE_ID
+            child.previous_id = GroupID(children[idx - 1].id.id) if idx > 0 else GROUP_NONE_ID
+
         # Put all the observations in the one big AND group and return it.
         return Group(
             id=group_id,
-            parent_id=parent_id,
             program_id=program_id,
             group_name=group_name,
+            parent_id=parent_id,
+            previous_id=GROUP_NONE_ID,
+            next_id=GROUP_NONE_ID,
             number_to_observe=number_to_observe,
             number_observed=0,
             delay_min=delay_min,
             delay_max=delay_max,
+            active=True,
             children=children,
-            # TODO: Should this be ANYORDER OR CONSEC_ORDERED?
             group_option=group_option)
 
     def parse_program(self, data: dict) -> Optional[Program]:

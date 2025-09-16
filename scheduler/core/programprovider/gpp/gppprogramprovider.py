@@ -433,8 +433,8 @@ class GppProgramProvider(ProgramProvider):
         next_id=GROUP_NONE_ID,
         number_to_observe=1,
         number_observed=0,
-        delay_min=ZeroTime,
-        delay_max=ZeroTime,
+        delay_min=None,
+        delay_max=None,
         active=True,
         children=[_EMPTY_OBSERVATION],
         group_option=AndOption.CONSEC_ORDERED)
@@ -1259,7 +1259,6 @@ class GppProgramProvider(ProgramProvider):
         # [children.insert(0, child) for child in trivial_groups]
 
         # If there are no children to observe, terminate with None
-        # number_to_observe = len(children)
         if len(children) == 0:
             logger.warning(f"Program {program_id} group {group_id} has no candidate children. Skipping.")
             return None
