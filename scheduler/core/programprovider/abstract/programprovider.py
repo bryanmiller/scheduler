@@ -6,7 +6,7 @@ from typing import FrozenSet, List, Optional, Tuple
 
 from lucupy.minimodel import (Group, Atom, Conditions, Constraints, GroupID, Magnitude, NonsiderealTarget,
                               Observation, ObservationClass, Program, ProgramID, QAState, SiderealTarget,
-                              Site, Target, TimeAllocation, TimingWindow)
+                              Site, Target, TimeAllocation, TimingWindow, Band)
 
 from scheduler.core.sources.sources import Sources
 
@@ -72,7 +72,7 @@ class ProgramProvider(ABC):
 
     @abstractmethod
     def parse_group(self, data: dict, program_id: ProgramID, group_id: GroupID,
-                        split: bool, split_by_iterator: bool) -> Optional[Group]:
+                        split: bool, split_by_iterator: bool, band: Optional[Band]=None) -> Optional[Group]:
         """
         Given an associative array that contains the data needed for a group,
         retrieve the data and populate the Group.
@@ -94,7 +94,8 @@ class ProgramProvider(ABC):
                           num: Tuple[Optional[int], int],
                           program_id: ProgramID,
                           split: bool,
-                          split_by_iterator: bool) -> Optional[Observation]:
+                          split_by_iterator: bool,
+                          band: Optional[Band]=None) -> Optional[Observation]:
         """
         Given an associative array that contains observation data, retrieve the data
         and populate an Observation object, provided the obs_class for the observation is in

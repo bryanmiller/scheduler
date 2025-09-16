@@ -72,11 +72,15 @@ class Engine:
         print(f'Collector built in {(t1 - t0) / 60.} min')
 
         # print_collector_info(collector)
-        # print(collector.get_program_ids())
+        # print(collector.get_program_ids()
+        progids = collector.get_program_ids()
         from lucupy.minimodel import ProgramID, Band
-        # p = collector.get_program(ProgramID('G-2025B-1066-D')) # GPP
-        p = collector.get_program(ProgramID('G-2025B-0571-Q')) # GPP
-        # p = collector.get_program(ProgramID('GN-2018B-Q-101')) # OCS
+        if ProgramID('G-2025B-0571-Q') in progids:
+            p = collector.get_program(ProgramID('G-2025B-0571-Q')) #
+        elif ProgramID('G-2025B-1066-D') in progids:
+            p = collector.get_program(ProgramID('G-2025B-1066-D'))  # GPP
+        if ProgramID('GN-2018B-Q-101') in progids:
+            p = collector.get_program(ProgramID('GN-2018B-Q-101')) # OCS
         # print(p.id, p.internal_id, p.type)
         # print(f"Start: {p.start}, End: {p.end}")
         # print(f"Total used: {p.total_used()}")
