@@ -59,7 +59,7 @@ class SCP:
         # print(f"\nSchedulable Groups")
         # for group_data in selection.schedulable_groups.values():
         #     # p = selection.program_info[group_data.group.program_id]
-        #     print(group_data.group.id.id)
+        #     print(group_data.group.unique_id.id)
         #     group_data.group.show()
 
         # Right now the optimizer generates List[Plans], a list of plans indexed by
