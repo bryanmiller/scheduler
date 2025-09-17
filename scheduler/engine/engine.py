@@ -80,7 +80,8 @@ class Engine:
         elif ProgramID('G-2025B-1066-D') in progids:
             p = collector.get_program(ProgramID('G-2025B-1066-D'))  # GPP
         if ProgramID('GN-2018B-Q-101') in progids:
-            p = collector.get_program(ProgramID('GN-2018B-Q-101')) # OCS
+            p = collector.get_program(ProgramID('GS-2018B-Q-113')) # OCS
+            # p = collector.get_program(ProgramID('GN-2018B-Q-101'))  # OCS
         # print(p.id, p.internal_id, p.type)
         # print(f"Start: {p.start}, End: {p.end}")
         # print(f"Total used: {p.total_used()}")
