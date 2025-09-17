@@ -37,7 +37,7 @@ def main(*,
 
     # Create Parameters
     params = SchedulerParameters(start=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
-                                 end=Time("2018-10-03 08:00:00", format='iso', scale='utc'),
+                                 end=Time("2018-10-05 08:00:00", format='iso', scale='utc'),
     # params = SchedulerParameters(start=Time("2018-12-15 08:00:00", format='iso', scale='utc'),
     #                              end=Time("2018-12-20 08:00:00", format='iso', scale='utc'),
     # params=SchedulerParameters(start=Time("2018-08-01 08:00:00", format='iso', scale='utc'),
@@ -50,7 +50,7 @@ def main(*,
                                ranker_parameters=RankerParameters(),
                                # ranker_parameters=RankerParameters(vis_power=0.5, air_power=1.0),
                                semester_visibility=False,
-                               num_nights_to_schedule=1,
+                               num_nights_to_schedule=2,
                                programs_list=programs_list)
     engine = Engine(params)
     plan_summary, timelines = engine.schedule()
