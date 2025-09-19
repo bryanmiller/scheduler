@@ -74,20 +74,27 @@ class Engine:
         # print_collector_info(collector)
         # print(collector.get_program_ids()
         progids = collector.get_program_ids()
+        print(progids)
+        p=None
         from lucupy.minimodel import ProgramID, Band
         if ProgramID('G-2025B-0571-Q') in progids:
             p = collector.get_program(ProgramID('G-2025B-0571-Q')) #
         elif ProgramID('G-2025B-1066-D') in progids:
             p = collector.get_program(ProgramID('G-2025B-1066-D'))  # GPP
+        elif ProgramID('G-2025B-0505-V') in progids:
+            p = collector.get_program(ProgramID('G-2025B-0505-V'))  # GPP
+        elif ProgramID('G-2025B-0503-V') in progids:
+            p = collector.get_program(ProgramID('G-2025B-0503-V'))  # GPP
         if ProgramID('GN-2018B-Q-101') in progids:
             p = collector.get_program(ProgramID('GS-2018B-Q-113')) # OCS
             # p = collector.get_program(ProgramID('GN-2018B-Q-101'))  # OCS
         # print(p.id, p.internal_id, p.type)
         # print(f"Start: {p.start}, End: {p.end}")
         # print(f"Total used: {p.total_used()}")
-        print(f"Program awarded: {p.program_awarded()}, Band 1: {p.program_awarded(Band(1))}")
-        print(f"Program used: {p.program_used()}, Band 1: {p.program_used(Band(1))}")
-        p.show()
+        if p is not None:
+            print(f"Program awarded: {p.program_awarded()}, Band 1: {p.program_awarded(Band(1))}")
+            print(f"Program used: {p.program_used()}, Band 1: {p.program_used(Band(1))}")
+            p.show()
 
         selector = builder.build_selector(collector=collector,
                                           num_nights_to_schedule=self.params.num_nights_to_schedule,
