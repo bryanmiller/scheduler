@@ -37,12 +37,13 @@ def main(*,
     # Create Parameters
     params = SchedulerParameters(start=Time("2025-09-22 08:00:00", format='iso', scale='utc'),
                                  end=Time("2025-09-28 08:00:00", format='iso', scale='utc'),
-                              sites=ALL_SITES,
-                               # sites=[Site.GN],
+                              # sites=ALL_SITES,
+                               sites=[Site.GN],
+                               # sites=[Site.GS],
                                mode=SchedulerModes.SIMULATION,
                                ranker_parameters=RankerParameters(vis_power=1.0, air_power=0.0),
                                semester_visibility=False,
-                               num_nights_to_schedule=2,
+                               num_nights_to_schedule=1,
                                programs_list=programs_list)
     engine = Engine(params)
     plan_summary, timelines = engine.schedule()
