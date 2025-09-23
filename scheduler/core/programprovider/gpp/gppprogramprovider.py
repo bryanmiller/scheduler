@@ -648,6 +648,7 @@ class GppProgramProvider(ProgramProvider):
         # Convert RA/Dec to decimal degrees
         ra = sex2dec(ra_hhmmss, to_degree=True)
         dec = sex2dec(dec_ddmmss, to_degree=False)
+        # print(f"parse_sidereal_target: {name} {ra} {dec}")
 
         # Proper motion
         try:
