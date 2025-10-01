@@ -83,9 +83,9 @@ class Engine:
             p = collector.get_program(ProgramID('G-2025B-1066-D'))  # GPP
         # if ProgramID('G-2025B-0505-V') in progids:
         #     p = collector.get_program(ProgramID('G-2025B-0505-V'))  # GPP prod
-        # if ProgramID('G-2025B-0501-V') in progids:
-        #     p = collector.get_program(ProgramID('G-2025B-0501-V'))  # GPP prod
-        if ProgramID('G-2025B-0496-V') in progids:
+        if ProgramID('G-2025B-0501-V') in progids:
+            p = collector.get_program(ProgramID('G-2025B-0501-V'))  # GPP prod
+        elif ProgramID('G-2025B-0496-V') in progids:
             p = collector.get_program(ProgramID('G-2025B-0496-V'))  # GPP prod
         if ProgramID('GN-2018B-Q-101') in progids:
             p = collector.get_program(ProgramID('GS-2018B-Q-113')) # OCS
