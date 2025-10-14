@@ -58,9 +58,8 @@ class SCP:
         # night_idx = selection.night_indices[0]
         # print(f"\nSchedulable Groups")
         # for group_data in selection.schedulable_groups.values():
-        #     # p = selection.program_info[group_data.group.program_id]
-        #     print(group_data.group.unique_id.id)
-        #     group_data.group.show()
+        #     print(f"\t{group_data.group.unique_id.id}")
+            # group_data.group.show()
 
         # Right now the optimizer generates List[Plans], a list of plans indexed by
         # every night in the selection. We only want the first one, which corresponds
