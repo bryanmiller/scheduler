@@ -87,9 +87,11 @@ class Engine:
             p = collector.get_program(ProgramID('G-2025B-0501-V'))  # GPP prod
         elif ProgramID('G-2025B-0496-V') in progids:
             p = collector.get_program(ProgramID('G-2025B-0496-V'))  # GPP prod
-        if ProgramID('GN-2018B-Q-101') in progids:
-            p = collector.get_program(ProgramID('GS-2018B-Q-113')) # OCS
-            # p = collector.get_program(ProgramID('GN-2018B-Q-101'))  # OCS
+        # if ProgramID('GN-2018B-Q-101') in progids:
+        # p = collector.get_program(ProgramID('GN-2018B-Q-101'))  # OCS
+        #     p = collector.get_program(ProgramID('GS-2018B-Q-113')) # OCS
+        if ProgramID('GS-2018B-Q-224') in progids:
+            p = collector.get_program(ProgramID('GS-2018B-Q-224')) # OCS
         # print(p.id, p.internal_id, p.type)
         # print(f"Start: {p.start}, End: {p.end}")
         # print(f"Total used: {p.total_used()}")
@@ -212,6 +214,7 @@ class Engine:
                 nightly_timeline.calculate_time_losses(night_idx, site)
             tn1 = time()
             print(f'Night {night_idx + 1} scheduled in {(tn1 - tn0) / 60.} min')
+            nightly_timeline.display(night_idx_sel=night_idx)
             tn0 = tn1
 
         # TODO: Add plan summary to nightlyTimeline

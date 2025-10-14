@@ -343,9 +343,9 @@ class DefaultRanker(Ranker):
         # Assign scores in p to all indices where visibility constraints are met.
         # They will otherwise be 0 as originally defined.
         for night_idx in night_indices:
-            # if 'Q-127' in obs.id.id:
-            #     print(obs.id.id, night_idx, np.max(p[night_idx]), priority_value)
             slot_indices = target_info[night_idx].visibility_slot_idx
+            # if 'Q-224' in obs.id.id:
+            #     print(obs.id.id, night_idx, np.max(p[night_idx]), priority_value, len(slot_indices))
             scores[night_idx].put(slot_indices, p[night_idx][slot_indices])
 
         return scores
