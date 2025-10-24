@@ -74,7 +74,7 @@ class Engine:
         # print_collector_info(collector)
         # print(collector.get_program_ids()
         progids = collector.get_program_ids()
-        print(progids)
+        # print(progids)
         p=None
         from lucupy.minimodel import ProgramID, Band
         if ProgramID('G-2025B-0571-Q') in progids:
@@ -214,7 +214,7 @@ class Engine:
                 nightly_timeline.calculate_time_losses(night_idx, site)
             tn1 = time()
             print(f'Night {night_idx + 1} scheduled in {(tn1 - tn0) / 60.} min')
-            nightly_timeline.display(night_idx_sel=night_idx)
+            # nightly_timeline.display(night_idx_sel=night_idx)
             tn0 = tn1
 
         # TODO: Add plan summary to nightlyTimeline
