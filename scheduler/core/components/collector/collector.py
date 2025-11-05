@@ -439,6 +439,7 @@ class Collector(SchedulerComponent):
             # Determine the end timeslot for the site if one is specified.
             # We set to None is the whole night is to be done.
             end_timeslot_bound = end_timeslot_bounds.get(plan.site) if end_timeslot_bounds is not None else None
+            # print(f'time_accounting: end_timeslot_bounds {end_timeslot_bounds}, end_timeslot_bound {end_timeslot_bound}')
 
             grpvisits = []
             # Restore this if we actually need ii, but seems it was just being used to check that grpvisits nonempty.
@@ -446,6 +447,7 @@ class Collector(SchedulerComponent):
             for visit in sorted(plan.visits, key=lambda v: v.start_time_slot):
                 obs = self.get_observation(visit.obs_id)
                 group = self._get_group(obs)
+                # print(f'time_accounting: {obs.id.id} {group.id.id} {group.unique_id.id}')
                 if grpvisits and group.is_scheduling_group() and group == grpvisits[-1].group:
                     grpvisits[-1].visits.append(visit)
                 else:
@@ -454,7 +456,7 @@ class Collector(SchedulerComponent):
             for grpvisit in grpvisits:
                 # Determine if group should be charged
                 if grpvisit.group.is_scheduling_group():
-                    # For now, only change aa scheduling group if it can be done fully
+                    # For now, only charge a scheduling group if it can be done fully
                     charge_group = end_timeslot_bound is None or end_timeslot_bound > grpvisit.end_time_slot()
                 else:
                     observation = self.get_observation(grpvisit.visits[0].obs_id)
