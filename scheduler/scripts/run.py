@@ -45,7 +45,7 @@ def main(*,
     # params=SchedulerParameters(start=Time("2018-08-02 08:00:00", format='iso', scale='utc'),
     #                           end=Time("2019-02-01 08:00:00", format='iso', scale='utc'),
                               # sites=ALL_SITES,
-                               sites=[Site.GS],
+                               sites=[Site.GN],
                                mode=SchedulerModes.VALIDATION,
                                ranker_parameters=RankerParameters(),
                                # ranker_parameters=RankerParameters(vis_power=2.0, wha_power=0.25),
@@ -68,7 +68,7 @@ def main(*,
 
 if __name__ == '__main__':
     t0 = time.time()
-    main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.redis.txt')
-    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids_gn.redis.txt')
+    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.redis.txt')
+    main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids_gn.redis.txt')
     # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.txt')
     print(f'Completed in {(time.time() - t0) / 60.} min')
