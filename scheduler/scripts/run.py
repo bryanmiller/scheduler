@@ -40,17 +40,17 @@ def main(*,
     #                              end=Time("2018-10-05 08:00:00", format='iso', scale='utc'),
     # params = SchedulerParameters(start=Time("2018-12-15 08:00:00", format='iso', scale='utc'),
     #                              end=Time("2018-12-20 08:00:00", format='iso', scale='utc'),
-    params=SchedulerParameters(start=Time("2018-08-01 08:00:00", format='iso', scale='utc'),
-                               end=Time("2018-10-01 08:00:00", format='iso', scale='utc'),
+    params=SchedulerParameters(start=Time("2018-08-02 08:00:00", format='iso', scale='utc'),
+                               end=Time("2018-10-02 08:00:00", format='iso', scale='utc'),
     # params=SchedulerParameters(start=Time("2018-08-02 08:00:00", format='iso', scale='utc'),
-    #                           end=Time("2019-01-31 08:00:00", format='iso', scale='utc'),
+    #                           end=Time("2019-02-01 08:00:00", format='iso', scale='utc'),
                               # sites=ALL_SITES,
-                               sites=[Site.GN],
+                               sites=[Site.GS],
                                mode=SchedulerModes.VALIDATION,
                                ranker_parameters=RankerParameters(),
                                # ranker_parameters=RankerParameters(vis_power=2.0, wha_power=0.25),
                                semester_visibility=False,
-                               num_nights_to_schedule=1,
+                               num_nights_to_schedule=10,
                                programs_list=programs_list)
     engine = Engine(params)
     plan_summary, timelines = engine.schedule()
@@ -68,7 +68,7 @@ def main(*,
 
 if __name__ == '__main__':
     t0 = time.time()
-    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.redis.txt')
+    main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.redis.txt')
     # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids_gn.redis.txt')
-    main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.txt')
+    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.txt')
     print(f'Completed in {(time.time() - t0) / 60.} min')
