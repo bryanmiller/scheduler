@@ -30,7 +30,7 @@ from scheduler.services.redis_client import RedisClient
 from scheduler.services.resource import NightConfiguration
 from scheduler.services.resource import ResourceService
 from scheduler.services.visibility.calculator import visibility_calculator
-from scheduler.services.visibility.calculator import VisibilitySnapshot, program_obs_vis, get_cores
+from scheduler.services.visibility.calculator import VisibilitySnapshot, program_obs_vis, get_cores, TargetVisibilityTable
 
 __all__ = [
     'Collector',
@@ -354,7 +354,7 @@ class Collector(SchedulerComponent):
         # with parallel_config(backend="loky", inner_max_num_threads=1):
         result = parallel(delayed(program_obs_vis)(program_id, obs, Collector.get_program(program_id), self.time_grid,
                                                    self.time_slot_length, self.semesters, nc, self.night_events,
-                                                   None if visibility_calculator.vis_table is None else
+                                                   None if not isinstance(visibility_calculator.vis_table, TargetVisibilityTable)  else
                                                    VisibilitySnapshot.from_dict_days(visibility_calculator.vis_table.get_obs(sem, obs.id)))
                           for program_id, obs in parsed_observations)
         targ_info, base_targets, vis_tables = zip(*result)
@@ -461,6 +461,7 @@ class Collector(SchedulerComponent):
                 else:
                     observation = self.get_observation(grpvisit.visits[0].obs_id)
                     n_slots_acq = time2slots(time_slot_length, observation.acq_overhead)
+                    # This should probably be the first unobserved atom, not the first in the sequence.
                     n_slots_atom0 = time2slots(time_slot_length, observation.sequence[0].exec_time)
                     slot_atom0_end = grpvisit.visits[0].start_time_slot + n_slots_atom0 - 1 + n_slots_acq
                     charge_group = end_timeslot_bound is None or end_timeslot_bound > slot_atom0_end
@@ -496,6 +497,7 @@ class Collector(SchedulerComponent):
                         if visit.atom_end_idx == len(obs_seq) - 1:
                             _logger.debug(f'Marking observation complete: {observation.id.id}')
                             observation.status = ObservationStatus.OBSERVED
+                            grpvisit.group.number_observed += 1
                             if observation in part_obs:
                                 part_obs.remove(observation)
                         else:
@@ -546,3 +548,5 @@ class Collector(SchedulerComponent):
                     for obs in part_obs:
                         _logger.debug(f'\tTime_accounting setting {obs.unique_id.id} to INACTIVE.')
                         obs.status = ObservationStatus.INACTIVE
+
+                # Evaluate tree here?
