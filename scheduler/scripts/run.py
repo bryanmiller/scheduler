@@ -50,7 +50,7 @@ def main(*,
                                ranker_parameters=RankerParameters(),
                                # ranker_parameters=RankerParameters(vis_power=2.0, wha_power=0.25),
                                semester_visibility=False,
-                               num_nights_to_schedule=2,
+                               num_nights_to_schedule=1,
                                programs_list=programs_list)
     engine = Engine(params)
     plan_summary, timelines = engine.schedule()
