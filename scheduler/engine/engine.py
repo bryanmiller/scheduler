@@ -78,7 +78,7 @@ class Engine:
         p=None
         from lucupy.minimodel import ProgramID, Band
         if ProgramID('G-2025B-0571-Q') in progids:
-            p = collector.get_program(ProgramID('G-2025B-0571-Q')) #
+            p = collector.get_program(ProgramID('G-2025B-0571-Q')) # GPP dev
         elif ProgramID('G-2025B-1066-D') in progids:
             p = collector.get_program(ProgramID('G-2025B-1066-D'))  # GPP
         # if ProgramID('G-2025B-0505-V') in progids:

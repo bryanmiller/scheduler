@@ -497,6 +497,7 @@ class Collector(SchedulerComponent):
 
                     if charge_group:
                         # Check if the Observation has been completely observed.
+                        # ToDo: confirm that this logic is correct with split observations with GPP
                         if visit.atom_end_idx == len(obs_seq) - 1:
                             _logger.debug(f'Marking observation complete: {observation.id.id}')
                             observation.status = ObservationStatus.OBSERVED
