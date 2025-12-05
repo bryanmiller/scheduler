@@ -13,7 +13,7 @@ from joblib import Parallel, delayed, parallel_config
 from lucupy.minimodel import (ALL_SITES, NightIndex, NightIndices,
                               Observation, ObservationID, ObservationClass, Program, ProgramID, ProgramTypes, Semester,
                               Site, Target, TimeslotIndex, QAState, ObservationStatus,
-                              Group)
+                              Group, unique_group_id, UniqueGroupID, AndOption, ROOT_GROUP_ID, GROUP_NONE_ID)
 from lucupy.timeutils import time2slots
 from lucupy.types import Day, ZeroTime
 
@@ -397,25 +397,27 @@ class Collector(SchedulerComponent):
         ) for night_idx in night_indices}
 
     def _get_group(self, obs: Observation) -> Group:
-        """Return the group that an observation is a member of."""
-        # TODO: How do we handle nested scheduling groups? Right now, if in a subgroup of a scheduling group, will fail.
+        """Return the group that an observation is a member of.
+        If the observation is at the root level, return the observation group,
+        otherwise the parent of the observation group."""
         program = self.get_program(obs.belongs_to)
 
-        # Look for obs in the specified group. Compare by ID to avoid comparing full objects.
-        def find_obs(g: Group) -> bool:
-            return any(obs.unique_id == group_obs.unique_id for group_obs in g.observations())
+        # Get observation group
+        obs_group = program.get_group(UniqueGroupID(obs.unique_id.id))
+        # print(f"_get_group: {obs.unique_id.id}, {obs_group.unique_id.id} {obs_group.parent_id.id}")
 
-        for group in program.root_group.children:
-            if group.is_scheduling_group():
-                for subgroup in group.children:
-                    if find_obs(subgroup):
-                        return group
+        # Look at the parent of the observation group
+        if obs_group.parent_id == ROOT_GROUP_ID:
+            # print(f"Group is {obs_group.unique_id}")
+            return obs_group
+        else:
+            group = program.get_group(unique_group_id(program.id, obs_group.parent_id))
+            # print(f"Group is {group.unique_id}")
+            if group is not None:
+                return group
             else:
-                if find_obs(group):
-                    return group
-
-        # This should never happen: cannot find observation in program.
-        raise RuntimeError(f'Could not find observation {obs.id.id} in program {program.id.id}.')
+                # This should never happen: cannot find observation in program.
+                raise RuntimeError(f'Could not find observation {obs.id.id} in program {program.id.id}.')
 
     def time_accounting(self,
                         plans: Plans,
@@ -442,7 +444,7 @@ class Collector(SchedulerComponent):
             # Determine the end timeslot for the site if one is specified.
             # We set to None is the whole night is to be done.
             end_timeslot_bound = end_timeslot_bounds.get(plan.site) if end_timeslot_bounds is not None else None
-            # print(f'time_accounting: end_timeslot_bounds {end_timeslot_bounds}, end_timeslot_bound {end_timeslot_bound}')
+            print(f'time_accounting: end_timeslot_bounds {end_timeslot_bounds}, end_timeslot_bound {end_timeslot_bound}')
 
             grpvisits = []
             # Restore this if we actually need ii, but seems it was just being used to check that grpvisits nonempty.
@@ -458,9 +460,15 @@ class Collector(SchedulerComponent):
 
             for grpvisit in grpvisits:
                 # Determine if group should be charged
-                if grpvisit.group.is_scheduling_group():
+                print(f"time_accounting: {grpvisit.group.id} {len(grpvisit.visits)} "
+                      f"{grpvisit.group.number_to_observe} {grpvisit.end_time_slot()}")
+                # if grpvisit.group.is_scheduling_group():
+                if grpvisit.group.group_option in [AndOption.CONSEC_ORDERED, AndOption.CONSEC_ANYORDER] and \
+                    len(grpvisit.visits) == grpvisit.group.number_to_observe:
                     # For now, only charge a scheduling group if it can be done fully
                     charge_group = end_timeslot_bound is None or end_timeslot_bound > grpvisit.end_time_slot()
+                    # if charge_group:
+                    #     grpvisit.group.number_observed = len(grpvisit.visits)
                 else:
                     observation = self.get_observation(grpvisit.visits[0].obs_id)
                     n_slots_acq = time2slots(time_slot_length, observation.acq_overhead)
@@ -478,8 +486,10 @@ class Collector(SchedulerComponent):
                 # Charge to not_charged if the bound occurs during an AND (scheduling) group
                 # TODO: for NIR + telluric, check if the standard was taken before the event, if so then charge for
                 # what was observed and make a new copy of the telluric
-                not_charged = (grpvisit.group.is_scheduling_group() and
-                               grpvisit.start_time_slot() <= end_timeslot_charge <= grpvisit.end_time_slot())
+                # not_charged = (grpvisit.group.is_scheduling_group() and
+                # Note: could update group.is_scheduling_group() to be a CONSEC AND group
+                not_charged = (grpvisit.group.group_option in [AndOption.CONSEC_ORDERED, AndOption.CONSEC_ANYORDER] and
+                              grpvisit.start_time_slot() <= end_timeslot_charge <= grpvisit.end_time_slot())
 
                 # prog_obs = grpvisit.group.program_observations()
                 part_obs = grpvisit.group.partner_observations()

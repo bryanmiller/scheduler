@@ -7,6 +7,7 @@ from lucupy.minimodel import TimeslotIndex, NightIndex, Site
 from scheduler.core.calculations import NightEvents
 from scheduler.core.components.changemonitor import ChangeMonitor, TimeCoordinateRecord
 from scheduler.core.events.queue import Event, NightlyTimeline, EventQueue, NightEventQueue
+from scheduler.core.output import print_plans
 from scheduler.core.plans import Plans
 from scheduler.core.scp import SCP
 from scheduler.services import logger_factory
@@ -228,9 +229,9 @@ class EventCycle:
                 )
 
             from lucupy.minimodel import ProgramID
-            if ProgramID('G-2025B-0571-Q') in self.scp.collector.get_program_ids():
-                p = self.scp.collector.get_program(ProgramID('G-2025B-0571-Q'))  # GPP dev
-                p.show()
+            # if ProgramID('G-2025B-0571-Q') in self.scp.collector.get_program_ids():
+            #     p = self.scp.collector.get_program(ProgramID('G-2025B-0571-Q'))  # GPP dev
+            #     p.show()
 
             # If the night is done, get a final plan and add it to the timeline.
             # Otherwise, get a new selection and request a new plan
@@ -256,6 +257,7 @@ class EventCycle:
                     plans,
                     nightly_timeline
                 )
+                print_plans(plans)
         
         return plans
 
