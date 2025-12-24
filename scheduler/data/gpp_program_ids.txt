@@ -1,8 +1,8 @@
 # Test programs in dev
 # p-147
 p-11d
-p-cc9
-p-d5d
+#p-cc9
+#p-d5d
 # XT1 programs in production
 #p-58f
 #p-577

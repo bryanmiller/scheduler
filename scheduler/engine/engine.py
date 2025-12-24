@@ -18,6 +18,7 @@ from scheduler.core.events.queue import NightlyTimeline
 from scheduler.core.sources import Sources
 from scheduler.core.statscalculator import StatCalculator
 from scheduler.services import logger_factory
+from lucupy.minimodel import ProgramID
 
 from time import time
 
@@ -212,6 +213,9 @@ class Engine:
             for site in sorted(self.params.sites, key=lambda site: site.name):
                 event_cycle.run(site, night_idx, nightly_timeline)
                 nightly_timeline.calculate_time_losses(night_idx, site)
+                if ProgramID('G-2025B-0571-Q') in scp.collector.get_program_ids():
+                    p = scp.collector.get_program(ProgramID('G-2025B-0571-Q'))  # GPP dev
+                    p.show()
             tn1 = time()
             print(f'Night {night_idx + 1} scheduled in {(tn1 - tn0) / 60.} min')
             # nightly_timeline.display(night_idx_sel=night_idx)

@@ -228,7 +228,7 @@ class EventCycle:
                     nightly_timeline
                 )
 
-            from lucupy.minimodel import ProgramID
+            # from lucupy.minimodel import ProgramID
             # if ProgramID('G-2025B-0571-Q') in self.scp.collector.get_program_ids():
             #     p = self.scp.collector.get_program(ProgramID('G-2025B-0571-Q'))  # GPP dev
             #     p.show()
@@ -257,7 +257,7 @@ class EventCycle:
                     plans,
                     nightly_timeline
                 )
-                print_plans(plans)
+                # print_plans(plans)
         
         return plans
 

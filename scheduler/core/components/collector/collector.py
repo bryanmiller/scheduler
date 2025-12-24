@@ -7,6 +7,7 @@ from typing import ClassVar, Dict, FrozenSet, Iterable, List, Optional, Tuple, T
 import astropy.units as u
 import numpy as np
 
+from datetime import datetime, timedelta, timezone
 from astropy.time import Time, TimeDelta
 from joblib import Parallel, delayed, parallel_config
 
@@ -47,6 +48,12 @@ class GroupVisits:
     """Container for holding group information for each visit"""
     group: Group
     visits: List[Visit]
+
+    def start_time(self):
+        if not self.visits:
+            raise RuntimeError(f'start_time requested, but no visits recorded for {self.group.unique_id}')
+        # return min([v.start_time for v in self.visits])
+        return self.visits[0].start_time
 
     def start_time_slot(self):
         if not self.visits:
@@ -406,18 +413,14 @@ class Collector(SchedulerComponent):
         obs_group = program.get_group(UniqueGroupID(obs.unique_id.id))
         # print(f"_get_group: {obs.unique_id.id}, {obs_group.unique_id.id} {obs_group.parent_id.id}")
 
-        # Look at the parent of the observation group
-        if obs_group.parent_id == ROOT_GROUP_ID:
-            # print(f"Group is {obs_group.unique_id}")
-            return obs_group
+        # Get parent group
+        parent = program.get_group(unique_group_id(program.id, obs_group.parent_id))
+
+        # If the observation is in a consec AND group, return the parent, else the observation group
+        if parent.group_option in [AndOption.CONSEC_ORDERED, AndOption.CONSEC_ANYORDER]:
+            return parent
         else:
-            group = program.get_group(unique_group_id(program.id, obs_group.parent_id))
-            # print(f"Group is {group.unique_id}")
-            if group is not None:
-                return group
-            else:
-                # This should never happen: cannot find observation in program.
-                raise RuntimeError(f'Could not find observation {obs.id.id} in program {program.id.id}.')
+            return obs_group
 
     def time_accounting(self,
                         plans: Plans,
@@ -437,6 +440,104 @@ class Collector(SchedulerComponent):
         # Avoids repeated conversions in loop.
         time_slot_length = self.time_slot_length.to_datetime()
 
+        def sep(indent: int) -> str:
+            return '-----' * indent
+
+        def set_next_active(next_group: Group, timing_window) -> bool:
+            """Set the next group to active, recursively follow down the group gree as needed,
+               end set new the timing window for cadences (non-consecutive AND groups"""
+
+            next_group.active = True
+            # print(f"Setting {next_group.unique_id} to active with timing window")
+            # print(f"{timing_window[0].iso} {timing_window[1].iso}")
+            # ToDo: update timing windows and recalculate visibilities
+            # if next_group.group_option in [AndOption.CONSEC_ORDERED, AndOption.CONSEC_ANYORDER]:
+                # Update the timing windows of the next group
+                # obs = next_group.observations()[0]
+                # site = obs.site
+                # # print(f"observation: {obs.id.id}")
+                # # Clock times for each time slot
+                # times = self.night_events[site].times[night_idx]
+                # # print(f"{times[0]} {times[-1]}")
+                # # print(f"{tw_exclude_idx}")
+                # if next_group.unique_id in self.selection.schedulable_groups.keys():
+                #     target_info = p.target_info[obs.id]
+                #     schedulable_group = self.selection.schedulable_groups[next_group.unique_id]
+                #     vis_idx = target_info[night_idx].visibility_slot_idx
+                #     tw_exclude_idx = np.where(
+                #         np.logical_or(times[vis_idx] < timing_window[0],
+                #                       times[vis_idx] > timing_window[1])
+                #     )[0]
+                #     tw_include_idx = np.where(
+                #         np.logical_and(times[vis_idx] >= timing_window[0],
+                #                        times[vis_idx] <= timing_window[1])
+                #     )[0]
+                    # print(f"Max score before excluding tw: {np.max(schedulable_group.group_info.scores[night_idx])}")
+                    # Set scores to 0 outsize of the timing windows
+                    # schedulable_group.group_info.scores[night_idx][vis_idx[tw_exclude_idx]] = 0.0
+                    # print(f"Max score after excluding tw: {np.max(schedulable_group.group_info.scores[night_idx])}")
+                    # print(target_info[night_idx].visibility_slot_idx)
+                    # print(tw_include_idx)
+                    # Update target visibilities for future re-scores
+                    # target_info[night_idx].visibility_slot_idx = vis_idx[tw_include_idx]
+                    # print(target_info[night_idx].visibility_slot_idx)
+            set_next = False
+            # If the next group is a custom group, set the first child active. if OR, set all children active.
+            if next_group.group_option in [AndOption.CUSTOM, AndOption.NONE]:
+                for child in next_group.children:
+                    if child.previous_id == GROUP_NONE_ID:
+                        set_next = set_next_active(child, timing_window)
+                        if next_group.group_option == AndOption.CUSTOM:
+                            break
+            return set_next
+
+        def trim_tree(group: Group, depth: int = 1) -> None:
+            """Trim the unneeded branches from the tree by setting group.active=False"""
+
+            # print(f"{sep(depth)} {group.id.id}")
+            group.active = False
+            # if group.unique_id in self.group_ids:
+                # self.group_data_list.remove(group)
+                # print(f"{sep(depth)} update_group_list: removing {group.id.id}")
+                # group_data = self.selection.schedulable_groups[group.unique_id]
+                # if group_data in self.group_data_list:
+                #     self.group_data_list.remove(group_data)
+                    # print(f"{sep(depth)} update_group_list: removing {group.unique_id}")
+            if not group.is_observation_group():
+                for child in group.children:
+                    trim_tree(child)
+
+        def traverse_group_tree(program: Program, group: Group, end_time: datetime, depth: int = 1,
+                                set_next: bool = True) -> None:
+            """Traverse parent groups (up, then down each branch) starting at the given group"""
+
+            # print(f"Group {group.id} with parent {group.parent_id}, AndOption={group.group_option}")
+            if group.group_option in [AndOption.NONE, AndOption.ANYORDER, AndOption.CUSTOM]:
+                group.number_observed += 1
+            # print(f"{sep(depth)} group {group.unique_id}: to_observe {group.number_to_observe}, "
+            #       f"observed {group.number_observed}")
+            if group.number_observed == group.number_to_observe:
+                # Traverse down the lower branches
+                # print(f"{sep(depth)} group complete, trim the tree")
+                trim_tree(group, depth=depth + 1)
+
+            # If not at the root group, get parent info and move up the tree if needed
+            if group.parent_id != GROUP_NONE_ID:
+                # Parent group
+                parent_unique_id = unique_group_id(program.id, group.parent_id)
+                parent = program.get_group(parent_unique_id)
+
+                if parent.group_option == AndOption.CUSTOM and group.next_id != GROUP_NONE_ID and set_next:
+                    next_group = program.get_group(unique_group_id(program.id, group.next_id))
+                    # print(f"{parent.id.id} {end_time.astimezone(tz=timezone.utc)} delay_min = {parent.delay_min}, "
+                    #       f"delay_max={parent.delay_max}")
+                    timing_window = [Time(end_time + parent.delay_min), Time(end_time + parent.delay_max)]
+                    # print(f"Timing window: [{timing_window[0].iso}, {timing_window[1].iso}]")
+                    set_next = set_next_active(next_group, timing_window)
+
+                if group.number_observed == group.number_to_observe:
+                    traverse_group_tree(program, parent, end_time, set_next=set_next)
+
         for plan in plans:
             if plan.site not in sites:
                 continue
@@ -444,7 +545,7 @@ class Collector(SchedulerComponent):
             # Determine the end timeslot for the site if one is specified.
             # We set to None is the whole night is to be done.
             end_timeslot_bound = end_timeslot_bounds.get(plan.site) if end_timeslot_bounds is not None else None
-            print(f'time_accounting: end_timeslot_bounds {end_timeslot_bounds}, end_timeslot_bound {end_timeslot_bound}')
+            # print(f'time_accounting: end_timeslot_bounds {end_timeslot_bounds}, end_timeslot_bound {end_timeslot_bound}')
 
             grpvisits = []
             # Restore this if we actually need ii, but seems it was just being used to check that grpvisits nonempty.
@@ -453,6 +554,7 @@ class Collector(SchedulerComponent):
                 obs = self.get_observation(visit.obs_id)
                 group = self._get_group(obs)
                 # print(f'time_accounting: {obs.id.id} {group.id.id} {group.unique_id.id}')
+                # print(f'time_accounting: start_time_slot = {visit.start_time_slot}, start_time = {visit.start_time}')
                 if grpvisits and group.is_scheduling_group() and group == grpvisits[-1].group:
                     grpvisits[-1].visits.append(visit)
                 else:
@@ -460,8 +562,6 @@ class Collector(SchedulerComponent):
 
             for grpvisit in grpvisits:
                 # Determine if group should be charged
-                print(f"time_accounting: {grpvisit.group.id} {len(grpvisit.visits)} "
-                      f"{grpvisit.group.number_to_observe} {grpvisit.end_time_slot()}")
                 # if grpvisit.group.is_scheduling_group():
                 if grpvisit.group.group_option in [AndOption.CONSEC_ORDERED, AndOption.CONSEC_ANYORDER] and \
                     len(grpvisit.visits) == grpvisit.group.number_to_observe:
@@ -476,6 +576,8 @@ class Collector(SchedulerComponent):
                     n_slots_atom0 = time2slots(time_slot_length, observation.sequence[0].exec_time)
                     slot_atom0_end = grpvisit.visits[0].start_time_slot + n_slots_atom0 - 1 + n_slots_acq
                     charge_group = end_timeslot_bound is None or end_timeslot_bound > slot_atom0_end
+                # print(f"time_accounting: {grpvisit.group.id.id} {len(grpvisit.visits)} "
+                #       f"{grpvisit.group.number_to_observe} {grpvisit.end_time_slot()} {charge_group}")
 
                 # Charge if the end slot is less than this
                 if end_timeslot_bound is not None:
@@ -514,6 +616,12 @@ class Collector(SchedulerComponent):
                             grpvisit.group.number_observed += 1
                             if observation in part_obs:
                                 part_obs.remove(observation)
+                            # If grpvisit is not an observation group, find that and set number_observed/active
+                            if not grpvisit.group.is_observation_group():
+                                program = self.get_program(observation.belongs_to)
+                                obs_group = program.get_group(UniqueGroupID(observation.unique_id.id))
+                                # obs_group.active = False
+                                obs_group.number_observed = 1
                         else:
                             _logger.debug(f'Marking observation ongoing: {observation.id.id}')
                             observation.status = ObservationStatus.ONGOING
@@ -558,9 +666,15 @@ class Collector(SchedulerComponent):
                                 obs_seq[atom_idx].not_charged += not_charged_time
 
                 # If charging the groups, set remaining partner cals to INACTIVE
+                # Could also put this after l514 above
                 if charge_group:
                     for obs in part_obs:
                         _logger.debug(f'\tTime_accounting setting {obs.unique_id.id} to INACTIVE.')
                         obs.status = ObservationStatus.INACTIVE
 
-                # Evaluate tree here?
+                    # Traverse and trim tree
+                    program = self.get_program(grpvisit.group.program_id)
+                    total_slots_filled = end_timeslot_charge - grpvisit.start_time_slot() + 1
+                    end_time = grpvisit.start_time() + total_slots_filled * time_slot_length
+                    traverse_group_tree(program, grpvisit.group, end_time)
+
