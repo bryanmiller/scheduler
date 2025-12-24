@@ -77,6 +77,10 @@ class RankerParameters:
     # Weighted to slightly positive HA, backwards from the intention
     # dec_diff: npt.NDArray[float] = field(default_factory=lambda: np.array([3., 0.1, -0.06]))
 
+    # Code that we've used most of the time, backwards from the intention
+    # dec_diff_less_40: npt.NDArray[float] = field(default_factory=lambda: np.array([3., 0., -0.08]))
+    # dec_diff: npt.NDArray[float] = field(default_factory=lambda: np.array([3., 0.1, -0.06]))
+
     score_combiner: Callable[[npt.NDArray[float]], npt.NDArray[float]] = field(init=False)
 
     def __post_init__(self):
