@@ -907,8 +907,8 @@ class GreedyMaxOptimizer(BaseOptimizer):
                     # print(f"Timing window: [{timing_window[0].iso}, {timing_window[1].iso}]")
                     set_next = set_next_active(next_group, timing_window)
 
-                # subgroup = prog_info.group_data_map[parent]
-                traverse_group_tree(prog_info, parent, end_time, set_next=set_next)
+                if group.number_observed == group.number_to_observe:
+                    traverse_group_tree(prog_info, parent, end_time, set_next=set_next)
 
         # Get program information
         p = self.selection.program_info[max_group_info.group_data.group.program_id]
