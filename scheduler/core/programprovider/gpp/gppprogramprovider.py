@@ -305,6 +305,7 @@ class GppProgramProvider(ProgramProvider):
         'POINT_SIX': 0.6,
         'POINT_EIGHT': 0.8,
         'ONE_POINT_ZERO': 1.0,
+        'ONE_POINT_TWO': 1.2,
         'ONE_POINT_FIVE': 1.5,
         'TWO_POINT_ZERO': 2.0,
         'THREE_POINT_ZERO': 3.0,
