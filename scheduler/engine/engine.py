@@ -78,10 +78,12 @@ class Engine:
         # print_collector_info(collector)
         # print(collector.get_program_ids()
         progids = collector.get_program_ids()
-        # print(progids)
+        print(progids)
         p=None
         from lucupy.minimodel import ProgramID, Band
-        if ProgramID('G-2025B-0571-Q') in progids:
+        if ProgramID('G-2025B-1165-D') in progids:
+            p = collector.get_program(ProgramID('G-2025B-1165-D')) # GPP dev, F2
+        elif ProgramID('G-2025B-0571-Q') in progids:
             p = collector.get_program(ProgramID('G-2025B-0571-Q')) # GPP dev
         elif ProgramID('G-2025B-1066-D') in progids:
             p = collector.get_program(ProgramID('G-2025B-1066-D'))  # GPP
