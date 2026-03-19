@@ -50,10 +50,10 @@ def main(*,
     engine = Engine(params)
     plan_summary, timelines = engine.schedule()
     # File output for future results comparison
-    outpath = os.path.join(os.environ['HOME'], 'gemini', 'sciops', 'softdevel', 'Queue_planning', 'sched_output')
-    timelines.display(output=os.path.join(outpath, 'dev_1min_s20180801_184_20260303.txt'))
+    # outpath = os.path.join(os.environ['HOME'], 'gemini', 'sciops', 'softdevel', 'Queue_planning', 'sched_output')
+    # timelines.display(output=os.path.join(outpath, 'dev_1min_s20180801_184_20260303.txt'))
     # Display to stdout
-    # timelines.display()
+    timelines.display()
 
     # plot_stats(plan_summary, output=os.path.join(outpath, 'gn_s20180802_180_vp0p5_ap1_20250826.png'))
 
