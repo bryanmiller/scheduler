@@ -282,6 +282,7 @@ class DefaultRanker(Ranker):
                                               program.thesis)
         # print(f"Scoring {obs.id.id}: used={program.total_used(obs.band)}, remaining={remaining}, cplt={cplt}, "
         #       f"metric={metric[0]}")
+        # print(f"night_indices: {night_indices}")
 
         # Declination for the base target per night.
         dec = {night_idx: target_info[night_idx].coord.dec for night_idx in night_indices}
@@ -308,7 +309,7 @@ class DefaultRanker(Ranker):
         kk = {night_idx: np.where(wha[night_idx] <= 0.)[0] for night_idx in night_indices}
         for night_idx in night_indices:
             wha[night_idx][kk[night_idx]] = 0.
-        # print(f'   max wha: {np.max(wha[0]):.2f}  visfrac: {target_info[0].rem_visibility_frac:.5f}')
+        # print(f'\t max wha: {np.max(wha[night_indices[0]]):.2f}  visfrac: {target_info[night_indices[0]].rem_visibility_frac:.5f}')
 
         # Telescope altitude restrictions - set score to 0 if the altitude is outside the limits
         targ_alt = {night_idx: target_info[night_idx].alt for night_idx in night_indices}
@@ -344,6 +345,7 @@ class DefaultRanker(Ranker):
         prog_priority = {night_idx: self.params.program_priority if nc[night_idx].filter.program_priority_filter_any(program)
                          else 1.0 for night_idx in night_indices}
         scale_factor *= prog_priority[night_idx]
+        # print(f"\t scale_factor = {scale_factor} for night_idx {night_idx}")
 
         # Divide by the minimum airmass (mainly for cross-site scoring tests)
         p = {night_idx: scale_factor * (metric[0] ** self.params.met_power) *
@@ -357,7 +359,7 @@ class DefaultRanker(Ranker):
         for night_idx in night_indices:
             slot_indices = target_info[night_idx].visibility_slot_idx
             # if 'Q-224' in obs.id.id:
-            #     print(obs.id.id, night_idx, np.max(p[night_idx]), priority_value, len(slot_indices))
+            # print(f"\t {obs.id.id}, {night_idx}, {np.max(p[night_idx])}, {priority_value}, {len(slot_indices)}")
             scores[night_idx].put(slot_indices, p[night_idx][slot_indices])
 
         return scores

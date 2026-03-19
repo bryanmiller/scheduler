@@ -332,6 +332,7 @@ class GreedyMaxOptimizer(BaseOptimizer):
                             if max_score > max_score_on_interval and grp_interval_length >= n_min:
                                 max_score_on_interval = max_score
                                 max_interval = group_interval
+                                # ToDo: If rToO or time_critical, break the loop over intervals here.
 
                         if max_interval is not None:
                             max_scores.append(max_score_on_interval)
