@@ -1,11 +1,15 @@
 # Test programs in dev
 # p-147
-p-11d
-p-cc9
+##p-11d
+##p-cc9
 # p-d5d
 #p-113
-p-110
+##p-110
 p-1154
+# G-2026A-ENG-GMOSS-01
+p-108d
+# G-2026A-CAL-GMOSN-01
+p-1196
 # XT1 programs in production
 #p-58f
 #p-577
