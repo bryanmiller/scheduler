@@ -183,54 +183,54 @@ async def main():
     #print(f"Found {len(targets)} nonsidereal targets.")
 
     targets = [
-        NonsiderealTarget(
-        name=TargetName("Beer"),
-        des="1971 UC1",
-        type=TargetType.BASE,
-        magnitudes=frozenset(),
-        tag=TargetTag.ASTEROID),
-        NonsiderealTarget(
-            name=TargetName("Atlas"),
-            des="C/2025 N1",
-            type=TargetType.BASE,
-            magnitudes=frozenset(),
-            tag=TargetTag.COMET),
-        NonsiderealTarget(
-            name=TargetName("Kamo`oalewa"),
-            des="2016 HO3",
-            type=TargetType.BASE,
-            magnitudes=frozenset(),
-            tag=TargetTag.ASTEROID),
-        NonsiderealTarget(
-            name=TargetName("Bienor"),
-            des="2000 QC243",
-            type=TargetType.BASE,
-            magnitudes=frozenset(),
-            tag=TargetTag.ASTEROID),
-        NonsiderealTarget(
-            name=TargetName("2005 RL43"),
-            des="2005 RL43",
-            type=TargetType.BASE,
-            magnitudes=frozenset(),
-            tag=TargetTag.ASTEROID),
-        NonsiderealTarget(
-            name=TargetName("2007 RH283"),
-            des="2007 RH283",
-            type=TargetType.BASE,
-            magnitudes=frozenset(),
-            tag=TargetTag.ASTEROID),
-        NonsiderealTarget(
-            name=TargetName("2003 WL7"),
-            des="2003 WL7",
-            type=TargetType.BASE,
-            magnitudes=frozenset(),
-            tag=TargetTag.ASTEROID),
-        NonsiderealTarget(
-            name=TargetName("Aphidas"),
-            des="1999 XX143",
-            type=TargetType.BASE,
-            magnitudes=frozenset(),
-            tag=TargetTag.ASTEROID),
+        # NonsiderealTarget(
+        # name=TargetName("Beer"),
+        # des="1971 UC1",
+        # type=TargetType.BASE,
+        # magnitudes=frozenset(),
+        # tag=TargetTag.ASTEROID),
+        # NonsiderealTarget(
+        #     name=TargetName("Atlas"),
+        #     des="C/2025 N1",
+        #     type=TargetType.BASE,
+        #     magnitudes=frozenset(),
+        #     tag=TargetTag.COMET),
+        # NonsiderealTarget(
+        #     name=TargetName("Kamo`oalewa"),
+        #     des="2016 HO3",
+        #     type=TargetType.BASE,
+        #     magnitudes=frozenset(),
+        #     tag=TargetTag.ASTEROID),
+        # NonsiderealTarget(
+        #     name=TargetName("Bienor"),
+        #     des="2000 QC243",
+        #     type=TargetType.BASE,
+        #     magnitudes=frozenset(),
+        #     tag=TargetTag.ASTEROID),
+        # NonsiderealTarget(
+        #     name=TargetName("2005 RL43"),
+        #     des="2005 RL43",
+        #     type=TargetType.BASE,
+        #     magnitudes=frozenset(),
+        #     tag=TargetTag.ASTEROID),
+        # NonsiderealTarget(
+        #     name=TargetName("2007 RH283"),
+        #     des="2007 RH283",
+        #     type=TargetType.BASE,
+        #     magnitudes=frozenset(),
+        #     tag=TargetTag.ASTEROID),
+        # NonsiderealTarget(
+        #     name=TargetName("2003 WL7"),
+        #     des="2003 WL7",
+        #     type=TargetType.BASE,
+        #     magnitudes=frozenset(),
+        #     tag=TargetTag.ASTEROID),
+        # NonsiderealTarget(
+        #     name=TargetName("Aphidas"),
+        #     des="1999 XX143",
+        #     type=TargetType.BASE,
+        #     magnitudes=frozenset(),
+        #     tag=TargetTag.ASTEROID),
     ]
 
     results = fetch_batch_ephemerides(
