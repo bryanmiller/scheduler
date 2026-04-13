@@ -182,13 +182,14 @@ async def main():
     #targets = await get_nonsidereal_targets()
     #print(f"Found {len(targets)} nonsidereal targets.")
 
+    # noinspection LanguageDetectionInspection
     targets = [
-        # NonsiderealTarget(
-        # name=TargetName("Beer"),
-        # des="1971 UC1",
-        # type=TargetType.BASE,
-        # magnitudes=frozenset(),
-        # tag=TargetTag.ASTEROID),
+        NonsiderealTarget(
+        name=TargetName("Beer"),
+        des="1971 UC1",
+        type=TargetType.BASE,
+        magnitudes=frozenset(),
+        tag=TargetTag.ASTEROID),
         # NonsiderealTarget(
         #     name=TargetName("Atlas"),
         #     des="C/2025 N1",
