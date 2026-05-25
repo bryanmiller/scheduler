@@ -73,11 +73,13 @@ class Engine:
         print(f'Collector built in {(t1 - t0) / 60.} min')
 
         progids = collector.get_program_ids()
-        print(progids)
+        # print(progids)
         p=None
         from lucupy.minimodel import ProgramID, Band
         if ProgramID('G-2025B-1165-D') in progids:
             p = collector.get_program(ProgramID('G-2025B-1165-D')) # GPP dev, F2
+        elif ProgramID('GS-2018B-Q-113') in progids:
+            p = collector.get_program(ProgramID('GS-2018B-Q-113')) # OCS
         if p is not None:
             print(f"Program awarded: {p.program_awarded()}, Band 1: {p.program_awarded(Band(1))}")
             print(f"Program used: {p.program_used()}, Band 1: {p.program_used(Band(1))}")
