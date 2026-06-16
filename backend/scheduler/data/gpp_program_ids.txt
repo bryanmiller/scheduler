@@ -9,6 +9,8 @@
 p-d5a
 # G-2026A-0298-D, includes GN nonsidereal
 p-1154
+# G-2026A-0398-Q
+p-1283
 # G-2026A-ENG-GMOSS-01
 ##p-108d
 # G-2026A-CAL-GMOSN-01
