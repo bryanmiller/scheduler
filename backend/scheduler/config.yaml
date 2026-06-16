@@ -11,7 +11,6 @@ collector:
   # COLLECTOR_VISIBILITY_STRATEGY (tests set it to "local" so CI needs no DB).
   visibility_strategy: ${oc.env:COLLECTOR_VISIBILITY_STRATEGY,sight}
 
-
 optimizer:
   name: GREEDYMAX
 

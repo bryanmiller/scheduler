@@ -68,7 +68,8 @@ class Engine:
                                             semesters=self.params.semesters,
                                             blueprint=Blueprints.collector,
                                             night_times=night_times,
-                                            program_list=self.params.programs_list)
+                                            program_list=self.params.programs_list,
+                                            use_local_visibility=True)
         t1 = time()
         print(f'Collector built in {(t1 - t0) / 60.} min')
 
