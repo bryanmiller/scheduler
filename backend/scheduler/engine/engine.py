@@ -77,12 +77,14 @@ class Engine:
         # print(progids)
         p=None
         from lucupy.minimodel import ProgramID, Band
-        if ProgramID('G-2025B-1165-D') in progids:
-            p = collector.get_program(ProgramID('G-2025B-1165-D')) # GPP dev, F2
-        elif ProgramID('G-2026A-0166-Q') in progids:
-            p = collector.get_program(ProgramID('G-2026A-0166-Q'))
-        elif ProgramID('GS-2018B-Q-113') in progids:
-            p = collector.get_program(ProgramID('GS-2018B-Q-113')) # OCS
+        # if ProgramID('G-2025B-1165-D') in progids:
+        #     p = collector.get_program(ProgramID('G-2025B-1165-D')) # GPP dev, F2
+        # elif ProgramID('G-2026A-0166-Q') in progids:
+        #     p = collector.get_program(ProgramID('G-2026A-0166-Q'))
+        # elif ProgramID('GS-2018B-Q-113') in progids:
+        #     p = collector.get_program(ProgramID('GS-2018B-Q-113'))  # OCS
+        if ProgramID("G-2026A-ENG-IGRINS2-01") in progids:
+            p = collector.get_program(ProgramID("G-2026A-ENG-IGRINS2-01"))
         if p is not None:
             print(f"Program awarded: {p.program_awarded()}, Band 1: {p.program_awarded(Band(1))}")
             print(f"Program used: {p.program_used()}, Band 1: {p.program_used(Band(1))}")
