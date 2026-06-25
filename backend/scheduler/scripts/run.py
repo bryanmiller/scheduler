@@ -2,11 +2,12 @@
 # For license information see LICENSE or https://opensource.org/licenses/BSD-3-Clause
 
 import asyncio
+import os
 from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from lucupy.minimodel.site import ALL_SITES
+from lucupy.minimodel.site import ALL_SITES, Site
 from lucupy.observatory.abstract import ObservatoryProperties
 from lucupy.observatory.gemini import GeminiProperties
 
@@ -20,8 +21,8 @@ from scheduler.services.sight.database.connection import init_db_engine
 
 _logger = logger_factory.create_logger(__name__)
 
-
-def main(*, programs_ids: Path = Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.txt') -> None:
+def main(*,
+    programs_ids: Path = Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.txt') -> None:
 
     # Set lucupy to Gemini
     ObservatoryProperties.set_properties(GeminiProperties)
@@ -33,21 +34,18 @@ def main(*, programs_ids: Path = Path(ROOT_DIR) / 'scheduler' / 'data' / 'progra
     programs_list = ['GS-2018B-Q-112', 'GS-2018B-Q-113', 'GS-2018B-Q-127', 'GS-2018B-Q-133']
 
     # Create Parameters
-    params = SchedulerParameters(
-        start=datetime.fromisoformat("2018-10-01 08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-        end=datetime.fromisoformat("2018-10-03 08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-        sites=ALL_SITES,
-        mode=SchedulerModes.VALIDATION,
-        ranker_parameters=RankerParameters(),
-        semester_visibility=False,
-        num_nights_to_schedule=1,
-        programs_list=programs_list,
-        use_local_visibility=True,
-    )
+    params = SchedulerParameters(start=datetime.fromisoformat("2018-10-04 08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+                                 end=datetime.fromisoformat("2018-10-10 08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+                                 sites=ALL_SITES,
+                                 mode=SchedulerModes.VALIDATION,
+                                 ranker_parameters=RankerParameters(),
+                                 semester_visibility=False,
+                                 num_nights_to_schedule=3,
+                                 programs_list=programs_list,
+                                 use_local_visibility=True)
     engine = Engine(params)
     plan_summary, timelines = engine.schedule()
     timelines.display()
-
 
 if __name__ == '__main__':
     main()
