@@ -2,12 +2,14 @@
 # For license information see LICENSE or https://opensource.org/licenses/BSD-3-Clause
 
 import asyncio
+import os
 import time
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from lucupy.minimodel.site import Site
+from astropy.time import Time
+from lucupy.minimodel.site import ALL_SITES, Site
 from lucupy.observatory.abstract import ObservatoryProperties
 from lucupy.observatory.gemini import GeminiProperties
 
@@ -21,8 +23,8 @@ from scheduler.services.sight.database.connection import init_db_engine
 
 _logger = logger_factory.create_logger(__name__)
 
-
-def main(*, programs_ids: Path = Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.txt') -> None:
+def main(*,
+         programs_ids: Path = Path(ROOT_DIR) / 'scheduler' / 'data' / 'program_ids.txt') -> None:
 
     # Set lucupy to Gemini
     ObservatoryProperties.set_properties(GeminiProperties)
@@ -38,18 +40,20 @@ def main(*, programs_ids: Path = Path(ROOT_DIR) / 'scheduler' / 'data' / 'progra
     # Create Parameters
     # params = SchedulerParameters(start=Time("2025-09-30 08:00:00", format='iso', scale='utc'),
     #                              end=Time("2025-10-05 08:00:00", format='iso', scale='utc'),
-    params = SchedulerParameters(
-        start=datetime.fromisoformat("2026-03-26T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-        end=datetime.fromisoformat("2026-03-31T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-        # sites=ALL_SITES,
-        # sites=[Site.GN],
-        sites=[Site.GS],
-        mode=SchedulerModes.SIMULATION,
-        ranker_parameters=RankerParameters(vis_power=1.0, air_power=0.0),
-        semester_visibility=False,
-        num_nights_to_schedule=1,
-        programs_list=programs_list,
-    )
+    # params=SchedulerParameters(start=datetime.fromisoformat("2026-03-26T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    #                             end = datetime.fromisoformat("2026-03-31T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    params=SchedulerParameters(start=datetime.fromisoformat("2026-04-22T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+                                end = datetime.fromisoformat("2026-05-11T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    # params=SchedulerParameters(start=datetime.fromisoformat("2026-03-31T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    #                             end = datetime.fromisoformat("2026-04-14T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+                               sites=ALL_SITES,
+                               # sites=[Site.GN],
+                               # sites=[Site.GS],
+                               mode=SchedulerModes.SIMULATION,
+                               ranker_parameters=RankerParameters(vis_power=1.0, air_power=0.0),
+                               semester_visibility=False,
+                               num_nights_to_schedule=1,
+                               programs_list=programs_list)
     engine = Engine(params)
     plan_summary, timelines = engine.schedule()
     # File output for future results comparison
@@ -59,8 +63,7 @@ def main(*, programs_ids: Path = Path(ROOT_DIR) / 'scheduler' / 'data' / 'progra
     timelines.display()
     print(plan_summary)
 
-
 if __name__ == '__main__':
     t0 = time.time()
     main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_program_ids.txt')
-    print(f'Completed in {(time.time() - t0) / 60.0} min')
+    print(f'Completed in {(time.time() - t0) / 60.} min')
