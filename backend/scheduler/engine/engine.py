@@ -88,9 +88,10 @@ class Engine:
         elif ProgramID("GS-2018B-Q-112") in progids: # OCS
             p = collector.get_program(ProgramID("GS-2018B-Q-112"))
         if p is not None:
+            p.show()
             print(f"Program awarded: {p.program_awarded()}, Band 1: {p.program_awarded(Band(1))}")
             print(f"Program used: {p.program_used()}, Band 1: {p.program_used(Band(1))}")
-            p.show()
+            print(f"ToO type: {p.too_type.name}")
 
         selector = builder.build_selector(collector=collector,
                                           num_nights_to_schedule=self.params.num_nights_to_schedule,
