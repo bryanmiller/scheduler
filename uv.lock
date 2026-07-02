@@ -2685,7 +2685,7 @@ wheels = [
 
 [[package]]
 name = "scheduler"
-version = "0.1.15"
+version = "0.1.16"
 source = { virtual = "backend" }
 dependencies = [
     { name = "aioboto3" },
