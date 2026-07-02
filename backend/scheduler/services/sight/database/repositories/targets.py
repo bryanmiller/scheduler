@@ -18,6 +18,14 @@ class TargetRepository(BaseRepository[Target]):
         stmt = select(Target).where(Target.name == name)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def get_by_names(self, names: list[str]) -> dict[str, Target]:
+        """Get all targets whose name is in `names`, keyed by name. One query."""
+        if not names:
+            return {}
+        stmt = select(Target).where(Target.name.in_(set(names)))
+        result = await self.session.execute(stmt)
+        return {t.name: t for t in result.scalars().all()}
     
     async def get_sidereal(self) -> Sequence[Target]:
         """Get all sidereal targets."""

@@ -1,10 +1,16 @@
 from datetime import date
 from typing import Sequence
 
-from sqlalchemy import select, delete, and_
+from sqlalchemy import select, delete, and_, func
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from scheduler.services.sight.database.models import VisibilityData
+
+
+# Rows per executemany chunk in bulk_upsert: bounds per-statement bind
+# buffers (~1000 rows x 2-5KB of JSONB each) while keeping round trips low.
+BULK_UPSERT_CHUNK = 1000
 
 
 class VisibilityDataRepository:
@@ -127,6 +133,35 @@ class VisibilityDataRepository:
         self.session.add(data)
         await self.session.flush()
         return data
+
+    async def bulk_upsert(self, rows: list[dict]) -> int:
+        """
+        Insert or update many visibility rows in a few round trips.
+
+        Every row dict must have exactly the keys observation_id, target_id,
+        site_id, night_date, remaining_minutes, visible_ranges, constraints
+        (identical key sets across dicts, or SQLAlchemy compiles the column
+        list from the first dict only). The statement has no RETURNING, so
+        asyncpg pipelines each chunk as a single executemany round trip
+        instead of one SELECT + one write per row. asyncpg reports no
+        rowcount for executemany, so the returned count is rows submitted.
+        """
+        if not rows:
+            return 0
+
+        insert_stmt = pg_insert(VisibilityData)
+        stmt = insert_stmt.on_conflict_do_update(
+            constraint="uq_visibility_observation_night",
+            set_={
+                "remaining_minutes": insert_stmt.excluded.remaining_minutes,
+                "visible_ranges": insert_stmt.excluded.visible_ranges,
+                "constraints": insert_stmt.excluded.constraints,
+                "computed_at": func.now(),
+            },
+        )
+        for start in range(0, len(rows), BULK_UPSERT_CHUNK):
+            await self.session.execute(stmt, rows[start:start + BULK_UPSERT_CHUNK])
+        return len(rows)
 
     async def delete_by_observation(
         self,
