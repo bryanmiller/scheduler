@@ -61,6 +61,23 @@ class NightEventRepository(BaseRepository[NightEvent]):
         result = await self.session.execute(stmt)
         return result.scalars().all()
     
+    async def get_existing_dates(
+        self,
+        site_id: int,
+        start_date: date,
+        end_date: date,
+    ) -> set[date]:
+        """Get the night dates in the range that already have night events."""
+        stmt = select(NightEvent.night_date).where(
+            and_(
+                NightEvent.site_id == site_id,
+                NightEvent.night_date >= start_date,
+                NightEvent.night_date <= end_date,
+            )
+        )
+        result = await self.session.execute(stmt)
+        return set(result.scalars().all())
+
     async def exists(self, site_id: int, night_date: date) -> bool:
         """Check if night event exists for site and night."""
         stmt = select(NightEvent.id).where(

@@ -163,6 +163,47 @@ class Calculator:
         
         return night_event
     
+    async def _ensure_night_events_range(
+        self,
+        site_ids: set[int],
+        start_date: date,
+        end_date: date,
+    ) -> None:
+        """
+        Ensure night events exist for every (site, night) in the date range.
+
+        One dates-only query per site finds the missing nights, instead of
+        one exists() round trip per night.
+        """
+        sites = await self.get_sites()
+        num_nights = (end_date - start_date).days + 1
+        all_dates = [start_date + timedelta(days=n) for n in range(num_nights)]
+
+        for site_id in site_ids:
+            existing_dates = await self.night_repo.get_existing_dates(
+                site_id, start_date, end_date
+            )
+            site = sites[site_id]
+            for night_date in all_dates:
+                if night_date not in existing_dates:
+                    await self._calculate_and_store_night_events(site, night_date)
+
+    async def _get_night_events_range(
+        self,
+        site_id: int,
+        start_date: date,
+        end_date: date,
+    ) -> dict[date, NightEvent]:
+        """
+        Fetch all night events for a site over a date range in one query,
+        keyed by night date. Rows carry large packed arrays, so callers
+        should only fetch this when there is Stage 1 work to compute.
+        """
+        events = await self.night_repo.get_by_site_and_date_range(
+            site_id, start_date, end_date
+        )
+        return {event.night_date: event for event in events}
+
     async def _ensure_stage1_data(
         self,
         target_ids: set[int],
@@ -187,26 +228,18 @@ class Calculator:
                         target, site_id, night_date
                     )
     
-    async def _calculate_and_store_stage1(
+    def _stage1_row(
         self,
         target: Target,
-        site_id: int,
-        night_date: date,
-    ) -> TargetNightData:
-        """Calculate Stage 1 data for a target and store it."""
-        night_event = await self.night_repo.get_by_site_and_night(site_id, night_date)
-        if night_event is None:
-            raise ValueError(f"Night event not found for site {site_id} on {night_date}")
-        
-        sites = await self.get_sites()
-        site = sites[site_id]
-        
+        site: Site,
+        night_event: NightEvent,
+    ) -> dict:
+        """Compute Stage 1 arrays for one (target, site, night) as a row dict."""
         arrays = calculate_stage1(target, site, night_event)
-        
-        data = await self.target_data_repo.upsert(
+        return dict(
             target_id=target.id,
-            site_id=site_id,
-            night_date=night_date,
+            site_id=site.id,
+            night_date=night_event.night_date,
             night_duration_minutes=arrays.night_duration_minutes,
             ra=arrays.ra,
             dec=arrays.dec,
@@ -217,8 +250,29 @@ class Calculator:
             par_ang=arrays.par_ang,
             target_updated_at=target.updated_at,
         )
-        
-        return data
+
+    async def _calculate_and_store_stage1(
+        self,
+        target: Target,
+        site_id: int,
+        night_date: date,
+        night_event: NightEvent | None = None,
+    ) -> TargetNightData:
+        """
+        Calculate Stage 1 data for a target and store it.
+
+        Pass night_event when the caller already fetched it (e.g. via
+        _get_night_events_range) to save one full-row fetch per night.
+        """
+        if night_event is None:
+            night_event = await self.night_repo.get_by_site_and_night(site_id, night_date)
+            if night_event is None:
+                raise ValueError(f"Night event not found for site {site_id} on {night_date}")
+
+        sites = await self.get_sites()
+        site = sites[site_id]
+
+        return await self.target_data_repo.upsert(**self._stage1_row(target, site, night_event))
     
     def _calculate_stage2(
         self,
@@ -323,17 +377,36 @@ class Calculator:
         targets: list[TargetCreate],
         start_date: date,
         end_date: date,
+        site_ids: list[str] | None = None,
     ) -> BulkTargetCreateResponse:
         """
         Create multiple targets and pre-compute Stage 1 data.
+
+        If site_ids is None (the default, used by every existing caller),
+        Stage 1 is computed for every site in the DB, since a target's
+        alt/az/airmass is independent of which site currently observes it
+        and the scheduler may want to consider it at either site later.
+        Pass e.g. ['GN'] to restrict Stage 1 computation to a subset of
+        sites -- e.g. a validation/backfill run that wants to scope work
+        to the site(s) it's actually seeding, rather than always doing both.
         """
         created_targets = []
         errors = []
-        
-        # Get all site IDs
+
+        # Get the site IDs to compute Stage 1 for, restricted to the
+        # requested subset if given, else every site in the DB.
         sites = await self.get_sites()
-        site_ids = set(sites.keys())
-        
+        if site_ids:
+            site_id_ints = set(SITE_KEY_TO_ID[s] for s in site_ids)
+        else:
+            site_id_ints = set(sites.keys())
+
+        # Night events for the whole range, keyed by (site_id, night_date).
+        # They are target-independent, so they are fetched once (lazily, so
+        # a call where every target already exists never pays for the large
+        # array payloads) and reused for every target and night.
+        night_events: dict[tuple[int, date], NightEvent] | None = None
+
         for target_data in targets:
             try:
                 # Check if target already exists
@@ -341,7 +414,15 @@ class Calculator:
                 if existing:
                     errors.append(f"Target '{target_data.name}' already exists")
                     continue
-                
+
+                if night_events is None:
+                    await self._ensure_night_events_range(site_id_ints, start_date, end_date)
+                    night_events = {}
+                    for site_id in site_id_ints:
+                        by_date = await self._get_night_events_range(site_id, start_date, end_date)
+                        for night_date, event in by_date.items():
+                            night_events[(site_id, night_date)] = event
+
                 target = await self.target_repo.create(
                     name=target_data.name,
                     is_sidereal=target_data.is_sidereal,
@@ -353,21 +434,23 @@ class Calculator:
                     horizons_id=target_data.horizons_id,
                     tag=target_data.tag,
                 )
-                
-                # Compute Stage 1 for date range
+
+                # Compute Stage 1 for the whole date range, then insert the
+                # rows in one bulk flush: the target was just created, so no
+                # existing rows need the per-night upsert existence check.
+                rows = []
                 current_date = start_date
                 while current_date <= end_date:
-                    # Ensure night events exist
-                    await self._ensure_night_events(site_ids, current_date)
-                    
-                    # Compute Stage 1 for this target
-                    for site_id in site_ids:
-                        await self._calculate_and_store_stage1(target, site_id, current_date)
-                    
+                    for site_id in site_id_ints:
+                        site = sites[site_id]
+                        rows.append(self._stage1_row(
+                            target, site, night_events[(site_id, current_date)]
+                        ))
                     current_date += timedelta(days=1)
-                
+                await self.target_data_repo.create_many(rows)
+
                 created_targets.append(TargetResponse.model_validate(target))
-                
+
             except Exception as e:
                 errors.append(f"Failed to create '{target_data.name}': {str(e)}")
         
@@ -419,9 +502,13 @@ class Calculator:
     ) -> dict:
         """
         Pre-compute Stage 1 data for existing targets across a date range.
-        
+
         If target_names is None, computes for all targets.
         If site_ids is None, computes for all sites.
+
+        Nights that already have fresh Stage 1 rows are skipped;
+        total_computations in the result counts only the (target, site,
+        night) combinations actually computed.
         """
         # Get targets
         if target_names:
@@ -446,23 +533,44 @@ class Calculator:
             site_id_ints = set(SITE_KEY_TO_ID[s] for s in site_ids)
         else:
             site_id_ints = set(SITE_KEY_TO_ID.values())
-        
-        target_ids = set(t.id for t in targets)
+
+        # Ensure night events exist for the whole range up front: one
+        # dates-only query per site instead of one exists() per night.
+        await self._ensure_night_events_range(site_id_ints, start_date, end_date)
+
+        nights = (end_date - start_date).days + 1
+        all_dates = [start_date + timedelta(days=n) for n in range(nights)]
+
+        # Full night events carry large packed arrays, so they are fetched
+        # lazily (one query per site) only when some target actually has
+        # missing or stale nights to compute.
+        night_events_by_site: dict[int, dict[date, NightEvent]] = {}
+
         total = 0
-        nights = 0
-        
-        current_date = start_date
-        while current_date <= end_date:
-            # Ensure night events exist
-            await self._ensure_night_events(site_id_ints, current_date)
-            
-            # Compute Stage 1 for all targets
-            await self._ensure_stage1_data(target_ids, site_id_ints, current_date)
-            
-            total += len(targets) * len(site_id_ints)
-            nights += 1
-            current_date += timedelta(days=1)
-        
+        for target in targets:
+            for site_id in site_id_ints:
+                # One dates-only query tells us which nights already have
+                # fresh Stage 1 rows; a fully seeded target costs a single
+                # round trip per site instead of a full-row fetch per night.
+                fresh_dates = await self.target_data_repo.get_fresh_night_dates(
+                    target, site_id, start_date, end_date
+                )
+                missing_dates = [d for d in all_dates if d not in fresh_dates]
+                if not missing_dates:
+                    continue
+
+                if site_id not in night_events_by_site:
+                    night_events_by_site[site_id] = await self._get_night_events_range(
+                        site_id, start_date, end_date
+                    )
+
+                for night_date in missing_dates:
+                    await self._calculate_and_store_stage1(
+                        target, site_id, night_date,
+                        night_event=night_events_by_site[site_id][night_date],
+                    )
+                    total += 1
+
         return {
             "targets": len(targets),
             "sites": len(site_id_ints),

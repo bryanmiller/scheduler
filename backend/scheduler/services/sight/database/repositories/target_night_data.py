@@ -68,6 +68,33 @@ class TargetNightDataRepository(BaseRepository[TargetNightData]):
         result = await self.session.execute(stmt)
         return result.scalars().all()
     
+    async def get_fresh_night_dates(
+        self,
+        target: Target,
+        site_id: int,
+        start_date: date,
+        end_date: date,
+    ) -> set[date]:
+        """
+        Get the night dates in the range with cached data that is not stale
+        for the target at the site.
+
+        Selects only the night_date column, so checking a whole date range
+        costs one round trip and no array payloads, unlike fetching full
+        rows night by night.
+        """
+        stmt = select(TargetNightData.night_date).where(
+            and_(
+                TargetNightData.target_id == target.id,
+                TargetNightData.site_id == site_id,
+                TargetNightData.night_date >= start_date,
+                TargetNightData.night_date <= end_date,
+                TargetNightData.target_updated_at >= target.updated_at,
+            )
+        )
+        result = await self.session.execute(stmt)
+        return set(result.scalars().all())
+
     async def get_stale_for_target(
         self,
         target: Target,
