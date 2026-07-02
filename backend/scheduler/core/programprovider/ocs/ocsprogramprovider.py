@@ -1114,19 +1114,6 @@ class OcsProgramProvider(ProgramProvider):
             # Check sequence for the pre-imaging flag
             preimaging = parse_preimaging(data[OcsProgramProvider._ObsKeys.SEQUENCE])
 
-            # If the ToO override rapid setting is in place, then the default too_type for the program
-            # is overridden, i.e. it is a Standard ToO
-            if prg_too_type == TooType.RAPID:
-                if (OcsProgramProvider._ObsKeys.TOO_OVERRIDE_RAPID in data and
-                        data[OcsProgramProvider._ObsKeys.TOO_OVERRIDE_RAPID]) :
-                    too_type = TooType.STANDARD
-                else:
-                    too_type = TooType.RAPID
-            elif prg_too_type == TooType.STANDARD:
-                too_type = TooType.STANDARD
-            else:
-                too_type = TooType.NONE
-                
             # TODO: Should this be a list of all targets for the observation?
             targets = []
 
@@ -1193,6 +1180,19 @@ class OcsProgramProvider(ProgramProvider):
                 for user_target_data in user_targets_data:
                     user_target = self.parse_target(user_target_data)
                     targets.append(user_target)
+
+            # If the ToO override rapid setting is in place, then the default too_type for the program
+            # is overridden, i.e. it is a Standard ToO
+            if prg_too_type == TooType.RAPID:
+                if (OcsProgramProvider._ObsKeys.TOO_OVERRIDE_RAPID in data and
+                        data[OcsProgramProvider._ObsKeys.TOO_OVERRIDE_RAPID]) :
+                    too_type = TooType.STANDARD
+                else:
+                    too_type = TooType.RAPID
+            elif prg_too_type == TooType.STANDARD:
+                too_type = TooType.STANDARD
+            else:
+                too_type = TooType.NONE
 
             return GeminiObservation(
                 id=ObservationID(obs_id),

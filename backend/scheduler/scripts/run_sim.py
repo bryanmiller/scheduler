@@ -41,13 +41,16 @@ def main(*,
     #                              end=Time("2025-10-05 08:00:00", format='iso', scale='utc'),
     # params=SchedulerParameters(start=datetime.fromisoformat("2026-03-26T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     #                             end = datetime.fromisoformat("2026-03-31T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-    params=SchedulerParameters(start=datetime.fromisoformat("2026-04-22T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-                                end = datetime.fromisoformat("2026-05-11T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    # params=SchedulerParameters(start=datetime.fromisoformat("2026-04-22T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    #                             end = datetime.fromisoformat("2026-05-11T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     # params=SchedulerParameters(start=datetime.fromisoformat("2026-03-31T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     #                             end = datetime.fromisoformat("2026-04-14T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-                               sites=ALL_SITES,
+    # XT4
+        params=SchedulerParameters(start=datetime.fromisoformat("2026-07-04T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+                                    end = datetime.fromisoformat("2026-07-10T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+                               # sites=ALL_SITES,
                                # sites=[Site.GN],
-                               # sites=[Site.GS],
+                               sites=[Site.GS],
                                mode=SchedulerModes.SIMULATION,
                                ranker_parameters=RankerParameters(vis_power=1.0, air_power=0.0),
                                semester_visibility=False,
@@ -65,4 +68,5 @@ def main(*,
 if __name__ == '__main__':
     t0 = time.time()
     main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_program_ids.txt')
+    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_gs_xt4.txt')
     print(f'Completed in {(time.time() - t0) / 60.} min')
