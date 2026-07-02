@@ -24,11 +24,23 @@ Current branch structure. We are still going to be using a main branch to hold b
                           Ready for production?
                                     │
                                     ▼
-                          Actions → "Promote to PROD"
+                          Actions → "Prepare Release"
                            (manual trigger only)
                                     │
                                     ▼
-                          Version bump + tag (auto)
+                        release/vX PR to main
+                    (CalVer bump + CHANGELOG.md)
+                                    │
+                                    ▼
+                            Review & merge PR
+                                    │
+                                    ▼
+                        "Promote to PROD" auto-runs
+                         (merge is the trigger)
+                                    │
+                                    ▼
+                        Pre-flight: release merged?
+                          Heroku apps set up?
                                     │
                                     ▼
                               Approval gate
@@ -40,7 +52,8 @@ Current branch structure. We are still going to be using a main branch to hold b
                           │         │         │
                           └─────────┼─────────┘
                                     ▼
-                          GitHub Release + Changelog
+                          Tag + GitHub Release
+                        (from merged changelog)
 
 ```
 
@@ -101,22 +114,32 @@ The arg is passed via `heroku container:push --arg GPP_GROUP=…`. If you build 
 
 ## Promoting to Production
 
+Releasing is a two-step flow: first a reviewable release PR, then the actual promotion. The workflows never push to `main` directly (it is a protected branch).
+
+### Step 1 — Prepare the release
+
 1. Verify dev is working as expected
 
-2. Go to Actions → "Promote to PROD" → Run workflow
+2. Go to Actions → "Prepare Release" → Run workflow
 
-3. Optionally check "dry run" first to preview
+3. The workflow computes the next CalVer version, bumps `version.py`, builds `CHANGELOG.md` with towncrier (consuming the `changelog.d/` fragments), and opens a `release/vX.Y.Z` PR against `main`
 
-4. Approver accepts the environment gate
+4. Review the PR — it shows exactly what will be released — then approve and merge it. **Merging is the deploy trigger**; close the PR instead if you are not ready to ship
 
-5. All components deploy to prod
+### Step 2 — Promotion (automatic)
 
-6. Tag created, GitHub Release published with changelog
+Merging the `release/*` PR automatically triggers "Promote to PROD" (it can also be run manually from the Actions tab as a fallback, e.g. to retry a failed run):
+
+1. Pre-flight checks run first: the `CHANGELOG.md` entry for the current version must exist (and the tag must not), and the Heroku production apps are verified (apps reachable, backend apps on the `container` stack, `DATABASE_URL` present)
+
+2. All components deploy to prod. If required reviewers are configured on the `prod-backend`/`prod-frontend` environments, the deploy jobs pause for approval — remove them in Settings → Environments for a fully automatic promotion
+
+3. Tag `vX.Y.Z` is created and the GitHub Release is published (Releases tab) with the changelog section from the merged release PR
 
 ## Versioning: CalVer
 
 Format: YYYY.MM.PATCH (e.g., 2026.04.1, 2026.04.2, 2026.05.1)
 
-The "Create Release Tag" workflow auto-calculates the next version. Within the same month, patch increments. New month resets to 1. You can override with a specific version.
+The "Prepare Release" workflow auto-calculates the next version from `version.py`. Within the same month, patch increments. New month resets to 1. You can override with a specific version via the `version_override` input.
 
 Tags are the source of truth for what's in production.
