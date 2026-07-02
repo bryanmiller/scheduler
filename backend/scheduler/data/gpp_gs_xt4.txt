@@ -1,0 +1,9 @@
+# XT4 observations in production
+# G-2026A-0134-V = GS-2026A-Q-108
+p-a29
+# G-2026A-0133-V = GS-2026A-Q-410
+p-24a
+# G-2026A-ENG-GHOST-01
+p-a2a
+# G-2026A-CAL-GHOST-01
+p-a2b
