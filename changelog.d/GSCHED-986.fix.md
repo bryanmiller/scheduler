@@ -1,0 +1,1 @@
+Fix the release process: changelog is now built in a reviewable release PR (Prepare Release workflow) instead of pushing to the protected main branch, promotion pre-flight verifies the Heroku app setup, and the GitHub Release is created via the API
