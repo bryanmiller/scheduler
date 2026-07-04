@@ -67,6 +67,6 @@ def main(*,
 
 if __name__ == '__main__':
     t0 = time.time()
-    main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_program_ids.txt')
-    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_gs_xt4.txt')
+    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_program_ids.txt')
+    main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_gs_xt4.txt')
     print(f'Completed in {(time.time() - t0) / 60.} min')
