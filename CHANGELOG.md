@@ -5,6 +5,10 @@ This changelog is managed by [Towncrier](https://towncrier.readthedocs.io/).
 
 <!-- towncrier release notes start -->
 
+## 2026.07.2 (2026-07-06)
+
+No significant changes.
+
 ## 2026.07.1 (2026-07-02)
 
 ### Features
