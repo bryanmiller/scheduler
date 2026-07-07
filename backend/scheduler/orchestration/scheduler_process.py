@@ -41,30 +41,41 @@ class SchedulerProcess:
         self.running_event = asyncio.Event()
         self.engine = None
         self.night_monitor = None
+        self.task = None
         self._engine_task = None
 
     async def stop_process(self):
         """
-        Stop the scheduler process
+        Stop the scheduler process, releasing every owned task and subscription.
         """
 
         _logger.info("Stopping scheduler process...")
         self.running_event.clear()
-        # Cancel the running task if needed
-        if hasattr(self, 'task'):
-            self.task.cancel()
+
+        # Stop event production first so nothing new reaches the engine.
+        if self.night_monitor is not None:
+            await self.night_monitor.shutdown()
+
+        for task in (self._engine_task, self.task):
+            if task is None:
+                continue
+            task.cancel()
             try:
-                await self.task
+                await task
             except asyncio.CancelledError:
                 pass
+            except Exception:
+                # The task already died on its own; stopping must not fail.
+                _logger.exception(f"Task {task.get_name()} failed before stop_process.")
+
+        self._engine_task = None
+        self.task = None
 
     async def start_task(self):
         """
         Start the scheduler process as an asyncio task
         """
-
         self.task = asyncio.create_task(self.run())
-        # await self.task
 
     def is_running(self) -> bool:
         """
