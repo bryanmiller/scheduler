@@ -2,6 +2,8 @@
 # For license information see LICENSE or https://opensource.org/licenses/BSD-3-Clause
 
 import asyncio
+from functools import partial
+
 import stamina
 from aiohttp import ClientError
 from websockets import ConnectionClosedError, InvalidStatus
@@ -98,20 +100,36 @@ class EventListener:
         except asyncio.CancelledError:
             raise
 
+    @staticmethod
+    def _log_producer_done(sub_name: str, task: asyncio.Task) -> None:
+        """Done-callback: surface a producer that died, the moment it dies.
+
+        A producer only finishes with an exception once stamina has given up
+        (or the error was never retryable), which means the subscription is
+        gone for the rest of the night.
+        """
+        if task.cancelled():
+            return
+        exc = task.exception()
+        if exc is not None:
+            _logger.error(
+                f"Event subscription '{sub_name}' died; no further events "
+                f"will arrive from it.",
+                exc_info=exc,
+            )
+
     async def listen(self):
        """
-       Starts and gathers all producer tasks.
+       Starts and gathers all producer tasks, logging any producer that dies.
        """
-       producer_tasks = [
-           asyncio.create_task(
-               self._producer(
-                   source.source_type,
-                   sub_name,
-                   sub,
-                   client
+       producer_tasks = []
+       for source in self._sources:
+           for sub_name, sub, client in source.subscriptions():
+               task = asyncio.create_task(
+                   self._producer(source.source_type, sub_name, sub, client)
                )
-           ) for source in self._sources for sub_name, sub, client in source.subscriptions()
-       ]
+               task.add_done_callback(partial(self._log_producer_done, sub_name))
+               producer_tasks.append(task)
        try:
            await asyncio.gather(*producer_tasks, return_exceptions=True)
        except asyncio.CancelledError:
