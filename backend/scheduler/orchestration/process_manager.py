@@ -84,7 +84,6 @@ class ProcessManager:
             end=default_end,
             semester_visibility=False,
             num_nights_to_schedule=1,
-            programs_list=["p-cc9", "p-113"]
         )
         await self.add_scheduler_process(process_id, params)
         self.operation_process_id = process_id

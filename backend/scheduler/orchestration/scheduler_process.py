@@ -7,8 +7,10 @@ from datetime import timedelta
 from astropy.time import Time
 
 from scheduler.core.events.queue.scheduler_queue_client import SchedulerQueue
+from scheduler.graphql_mid.types import NightPlansError
 from scheduler.night_monitor.night_monitor import NightMonitor
 from scheduler.services.logger_factory import create_logger
+from scheduler.shared_queue import plan_response_subscribers
 from scheduler.engine import SchedulerParameters
 from scheduler.engine import EngineRT
 
@@ -109,6 +111,29 @@ class SchedulerProcess:
 
         # Initialize the engine variants
         self._engine_task = asyncio.create_task(self.engine.run())
+        self._engine_task.add_done_callback(self._on_engine_done)
         _logger.info("Engine started.")
 
         self.running_event.set()
+
+    def _on_engine_done(self, task: asyncio.Task) -> None:
+        """
+        Supervise the engine task. Logs when an exception happens
+        and cleans when is done.
+        """
+        if task.cancelled():
+            # Normal shutdown path (stop_process), nothing to report.
+            return
+
+        exc = task.exception()
+        if exc is None:
+            _logger.info(f"Engine task for process '{self.process_id}' finished.")
+            self.running_event.clear()
+            return
+
+        _logger.error(f"Engine task for process '{self.process_id}' crashed.",
+                      exc_info=exc)
+        self.running_event.clear()
+        # asyncio.Queue is unbounded, so put_nowait cannot raise QueueFull.
+        for q in plan_response_subscribers.get(self.process_id, set()):
+            q.put_nowait(NightPlansError(error=str(exc)))
