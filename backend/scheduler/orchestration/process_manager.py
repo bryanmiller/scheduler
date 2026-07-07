@@ -95,7 +95,17 @@ class ProcessManager:
         return self.operation_process_id
 
     def get_operation_process(self) -> Optional[SchedulerProcess]:
-        return self.active_processes[self.operation_process_id]
+        """The operation SchedulerProcess.
+
+        In OPERATION mode the process must exist, so a missing one raises
+        RuntimeError. In every other mode None is a normal answer.
+        """
+        process = (self.active_processes.get(self.operation_process_id)
+                   if self.operation_process_id is not None else None)
+        if process is None and is_operation:
+            raise RuntimeError("Operation process is not available: the scheduler "
+                               "is in OPERATION mode but no operation process is running.")
+        return process
 
     async def clear_operation_process(self):
         await self.stop_process(self.operation_process_id)

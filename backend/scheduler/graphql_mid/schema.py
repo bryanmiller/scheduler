@@ -119,6 +119,9 @@ class Query:
     @strawberry.field
     async def schedule_v2(self)-> str:
         op_process = process_manager.get_operation_process()
+        if op_process is None:
+            raise ValueError("No operation process is running: schedule_v2 is only "
+                             "available in OPERATION mode.")
 
         # Schedule event with None time to compute the plan from start of the night
         await op_process.scheduler_queue.add_schedule_event(
@@ -133,6 +136,9 @@ class Query:
     @strawberry.field
     async def on_demand_schedule(self)-> str:
         op_process = process_manager.get_operation_process()
+        if op_process is None:
+            raise ValueError("No operation process is running: on_demand_schedule is "
+                             "only available in OPERATION mode.")
 
         # Compute plan starting from the current time
         await op_process.scheduler_queue.add_schedule_event(
