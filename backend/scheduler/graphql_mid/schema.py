@@ -1,7 +1,6 @@
 # Copyright (c) 2016-2024 Association of Universities for Research in Astronomy, Inc. (AURA)
 # For license information see LICENSE or https://opensource.org/licenses/BSD-3-Clause
 import asyncio
-from os import environ
 from typing import AsyncGenerator, Dict
 from datetime import datetime, UTC
 from zoneinfo import ZoneInfo
@@ -20,6 +19,7 @@ from scheduler.services.logger_factory import create_logger
 from scheduler.shared_queue import plan_response_subscribers, build_parameters_subscribers
 from scheduler.clients.gpp import gpp
 from scheduler.services.visibility_aggregator import coordination
+from scheduler.version import get_app_version
 
 from .types import (SPlans, SNightTimelines, NewNightPlans, NightPlansError, Version, SRunSummary,
                     NewPlansRT, NightPlansResponseRT, NightTimesResponse, BuildParametersInput, BuildParametersResponse,
@@ -72,7 +72,7 @@ class Query:
 
     @strawberry.field
     def version(self) -> Version:
-        return Version(version=environ['APP_VERSION'], changelog=[])
+        return Version(version=get_app_version(), changelog=[])
 
     @strawberry.field
     async def schedule(self, schedule_id: str, new_schedule_input: CreateNewScheduleInput) -> str:

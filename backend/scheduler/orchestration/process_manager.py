@@ -90,6 +90,10 @@ class ProcessManager:
         self.operation_process_id = process_id
         _logger.info(f"Set operation process ID: {process_id}")
 
+    def get_operation_id(self) -> Optional[str]:
+        """The id of the operation scheduler process, or None outside operation mode."""
+        return self.operation_process_id
+
     def get_operation_process(self) -> Optional[SchedulerProcess]:
         return self.active_processes[self.operation_process_id]
 

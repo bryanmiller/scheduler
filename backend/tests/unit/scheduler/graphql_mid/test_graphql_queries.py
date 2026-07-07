@@ -103,3 +103,15 @@ async def test_schedule_query_with_wrong_parameters(set_observatory_properties, 
 
     result = await scheduler_schema.execute(query)
     assert result.data is None
+
+
+@pytest.mark.asyncio
+async def test_version_query_uses_version_file(scheduler_schema, monkeypatch):
+    # The version comes from the CI-generated version.py, not the env var.
+    monkeypatch.delenv("APP_VERSION", raising=False)
+
+    from scheduler.version import get_app_version
+
+    result = await scheduler_schema.execute("query { version { version } }")
+    assert result.errors is None
+    assert result.data["version"]["version"] == get_app_version()
