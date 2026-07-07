@@ -9,8 +9,11 @@ from scheduler.night_monitor.event_handlers import (
     EventHandler, WeatherEventHandler,
     ODBEventHandler, ResourceEventHandler
 )
+from scheduler.services import logger_factory
 
 __all__ = ['EventConsumer']
+
+_logger = logger_factory.create_logger(__name__)
 
 class EventConsumer:
     """
@@ -65,31 +68,23 @@ class EventConsumer:
         """
         Consumes the events from the queue.
 
-        Raises:
-            RuntimeError: a returned item from the queue is invalid.
+        One bad event (unknown source, corrupt item, handler bug) is logged
+        and skipped: it must not kill the consumer for the rest of the night.
         """
         while not self._shutdown_event.is_set():
            try:
                item = await self.queue.get()
-
-               # if item is None:
-               #    # Poison pill
-               #    raise RuntimeError('Corrupt message was received')
-
-               source, sub_name, data = item
-               handler = self._match_source_to_handler(source)
-
                try:
+                   source, sub_name, data = item
+                   handler = self._match_source_to_handler(source)
                    await handler.handle(sub_name, data)
-               except Exception as e:
-                   print("Handling process failed:", e)
+               except asyncio.CancelledError:
+                   raise
+               except Exception:
+                   _logger.exception(f'Failed to handle event {repr(item)}; skipping it.')
                finally:
                    self.queue.task_done()
 
-
            except asyncio.CancelledError:
-               print('Consumer cancelled')
-               break
-           except RuntimeError:
-               print('Consumer error')
+               _logger.info('Event consumer cancelled.')
                break
