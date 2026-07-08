@@ -66,6 +66,24 @@ def sync_rt_schedule(params: SchedulerParameters, night_start_time: Time, night_
 
 active_subscriptions: Dict[str, asyncio.Queue] = {}
 
+_schedule_tasks: set = set()
+
+async def _run_schedule_and_publish(schedule_id: str, params: SchedulerParameters) -> None:
+    """Run the validation schedule off-loop and publish the outcome (plans or
+    a NightPlansError) to every subscriber of schedule_id."""
+    try:
+        result = await asyncio.to_thread(sync_schedule, params)
+    except Exception as e:
+        _logger.exception(f"Validation schedule for '{schedule_id}' failed.")
+        result = NightPlansError(error=str(e))
+
+    queues = plan_response_subscribers.get(schedule_id, set())
+    if not queues:
+        _logger.warning(f"Schedule '{schedule_id}' finished but has no subscribers; "
+                        f"result dropped.")
+    for q in queues:
+        await q.put(result)
+
 
 @strawberry.type
 class Query:
@@ -100,20 +118,11 @@ class Query:
                                      new_schedule_input.num_nights_to_schedule,
                                      programs_list)
 
-        task = asyncio.to_thread(sync_schedule, params)
+        task = asyncio.create_task(_run_schedule_and_publish(schedule_id, params))
+        _schedule_tasks.add(task)
+        task.add_done_callback(_schedule_tasks.discard)
 
-        if schedule_id not in plan_response_subscribers:
-            plan_response_subscribers[schedule_id] = set()
-            client_queue = asyncio.Queue()
-            plan_response_subscribers[schedule_id].add(client_queue)
-            queues = plan_response_subscribers[schedule_id]
-        else:
-            queues = plan_response_subscribers[schedule_id]
-
-        # Is only one queue anyway as the process is subscribed by only one client.
-        for q in queues:
-            await q.put(task)
-        _logger.info(f"Plan is on the queue! for: {schedule_id}\n{params}")
+        _logger.info(f"Scheduling run started for: {schedule_id}\n{params}")
         return f'Plan is on the queue! for {schedule_id}'
 
     @strawberry.field
