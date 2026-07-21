@@ -36,9 +36,12 @@ def main(*,
     # Create Parameters
     # params = SchedulerParameters(start=datetime.fromisoformat("2018-10-04 08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     #                              end=datetime.fromisoformat("2018-10-10 08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-    params = SchedulerParameters(start=datetime.fromisoformat("2018-10-01 08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-                                 end=datetime.fromisoformat("2018-10-03 08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-                                 sites=ALL_SITES,
+    # params = SchedulerParameters(start=datetime.fromisoformat("2018-10-01 08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    #                              end=datetime.fromisoformat("2018-10-03 08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    params = SchedulerParameters(start=datetime.fromisoformat("2018-12-12 08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+                                 end=datetime.fromisoformat("2018-12-18 08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+                                 # sites=ALL_SITES,
+                                 sites=[Site.GN],
                                  mode=SchedulerModes.VALIDATION,
                                  ranker_parameters=RankerParameters(),
                                  semester_visibility=False,
@@ -48,6 +51,9 @@ def main(*,
     engine = Engine(params)
     plan_summary, timelines = engine.schedule()
     timelines.display()
+    print(plan_summary)
 
 if __name__ == '__main__':
-    main()
+    # programs_ids = Path(ROOT_DIR) / 'scheduler/data' / 'program_ids.txt'
+    programs_ids = Path(ROOT_DIR) / 'scheduler/data' / 'program_ids_gn.redis.txt'
+    main(programs_ids=programs_ids)
