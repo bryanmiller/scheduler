@@ -419,8 +419,12 @@ class GreedyMaxOptimizer(BaseOptimizer):
 
         if len(max_group_info.interval) > 1:
             # Slide across the interval, integrating the score over the group length
-            for idx in range(max_group_info.interval[0],
-                             max_group_info.interval[-1] - max_group_info.n_slots_remaining + 2):
+            # If a rToO, then use the start of the interval, don't need to slide
+            if max_group_info.group_data.group.too_type() >= TooType.RAPID:
+                max_range = max_group_info.interval[0] + 1
+            else:
+                max_range = max_group_info.interval[-1] - max_group_info.n_slots_remaining + 2
+            for idx in range(max_group_info.interval[0], max_range):
 
                 integral_score = sum(scores[idx:idx + max_group_info.n_slots_remaining + 1])
 
@@ -1030,7 +1034,10 @@ class GreedyMaxOptimizer(BaseOptimizer):
         # Get visit score and store information for the output plans
         end_time_slot = start_time_slot + visit_length - 1
         visit_score = sum(max_group_info.group_data.group_info.scores[night_idx][start_time_slot:end_time_slot + 1])
-        peak_score = max(max_group_info.group_data.group_info.scores[night_idx][start_time_slot:end_time_slot + 1])
+        # Peak score where the group was placed
+        # peak_score = max(max_group_info.group_data.group_info.scores[night_idx][start_time_slot:end_time_slot + 1])
+        # Peak score that was used to pick the group for the plan
+        peak_score = max_group_info.max_score
 
         self.obs_in_plan[site][start_time_slot] = ObsPlanData(
             obs=obs,
