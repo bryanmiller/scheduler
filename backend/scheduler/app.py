@@ -2,7 +2,6 @@
 # For license information see LICENSE or https://opensource.org/licenses/BSD-3-Clause
 import asyncio
 
-from os import environ
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from scheduler.clients.gpp import gpp
@@ -11,10 +10,11 @@ from scheduler.orchestration.process_manager import process_manager
 from scheduler.services.sight.database.connection import init_db_engine, dispose_engine
 from scheduler.services.logger_factory import create_logger
 from scheduler.core.builder.modes import is_validation, is_operation
+from scheduler.version import get_app_version
 
 _logger = create_logger(__name__, with_id=False)
 
-_logger.info(f"Running scheduler server version {environ['APP_VERSION']}")
+_logger.info(f"Running scheduler server version {get_app_version()}")
 
 async def lifespan(app: FastAPI):
     try:

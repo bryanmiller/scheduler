@@ -106,3 +106,54 @@ async def test_consume_multiple_items(event_consumer, queue):
         await consumer_task
     except asyncio.CancelledError:
         pass
+
+@pytest.mark.asyncio
+async def test_unknown_source_logs_and_continues(event_consumer, queue):
+    """An event from an unknown source is logged and skipped; the consumer
+    keeps processing later events instead of dying."""
+    bad_item = ("NOT_A_SOURCE", 'mystery_edit', {"id": 1})
+    good_item = (EventSourceType.ODB, 'observation_edit', {"id": 2})
+
+    await queue.put(bad_item)
+    await queue.put(good_item)
+
+    with patch('scheduler.night_monitor.event_consumer._logger') as mock_logger:
+        consumer_task = asyncio.create_task(event_consumer.consume())
+        await asyncio.wait_for(queue.join(), timeout=1)
+        event_consumer._shutdown_event.set()
+
+    mock_logger.exception.assert_called()
+    event_consumer.odb_handler.handle.assert_called_once_with('observation_edit', {"id": 2})
+
+    consumer_task.cancel()
+    try:
+        await consumer_task
+    except asyncio.CancelledError:
+        pass
+
+
+@pytest.mark.asyncio
+async def test_handler_error_goes_through_logger_exception(event_consumer, queue):
+    """A handler failure is reported via _logger.exception (not print) and the
+    consumer moves on to the next event."""
+    event_consumer.weather_handler.handle.side_effect = ValueError("boom")
+
+    failing_item = (EventSourceType.WEATHER, 'weather_change', {"id": 1})
+    good_item = (EventSourceType.RESOURCE, 'resource_edit', {"id": 2})
+
+    await queue.put(failing_item)
+    await queue.put(good_item)
+
+    with patch('scheduler.night_monitor.event_consumer._logger') as mock_logger:
+        consumer_task = asyncio.create_task(event_consumer.consume())
+        await asyncio.wait_for(queue.join(), timeout=1)
+        event_consumer._shutdown_event.set()
+
+    mock_logger.exception.assert_called()
+    event_consumer.resource_handler.handle.assert_called_once_with('resource_edit', {"id": 2})
+
+    consumer_task.cancel()
+    try:
+        await consumer_task
+    except asyncio.CancelledError:
+        pass

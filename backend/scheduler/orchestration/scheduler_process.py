@@ -7,8 +7,10 @@ from datetime import timedelta
 from astropy.time import Time
 
 from scheduler.core.events.queue.scheduler_queue_client import SchedulerQueue
+from scheduler.graphql_mid.types import NightPlansError
 from scheduler.night_monitor.night_monitor import NightMonitor
 from scheduler.services.logger_factory import create_logger
+from scheduler.shared_queue import plan_response_subscribers
 from scheduler.engine import SchedulerParameters
 from scheduler.engine import EngineRT
 
@@ -41,30 +43,41 @@ class SchedulerProcess:
         self.running_event = asyncio.Event()
         self.engine = None
         self.night_monitor = None
+        self.task = None
         self._engine_task = None
 
     async def stop_process(self):
         """
-        Stop the scheduler process
+        Stop the scheduler process, releasing every owned task and subscription.
         """
 
         _logger.info("Stopping scheduler process...")
         self.running_event.clear()
-        # Cancel the running task if needed
-        if hasattr(self, 'task'):
-            self.task.cancel()
+
+        # Stop event production first so nothing new reaches the engine.
+        if self.night_monitor is not None:
+            await self.night_monitor.shutdown()
+
+        for task in (self._engine_task, self.task):
+            if task is None:
+                continue
+            task.cancel()
             try:
-                await self.task
+                await task
             except asyncio.CancelledError:
                 pass
+            except Exception:
+                # The task already died on its own; stopping must not fail.
+                _logger.exception(f"Task {task.get_name()} failed before stop_process.")
+
+        self._engine_task = None
+        self.task = None
 
     async def start_task(self):
         """
         Start the scheduler process as an asyncio task
         """
-
         self.task = asyncio.create_task(self.run())
-        # await self.task
 
     def is_running(self) -> bool:
         """
@@ -98,6 +111,29 @@ class SchedulerProcess:
 
         # Initialize the engine variants
         self._engine_task = asyncio.create_task(self.engine.run())
+        self._engine_task.add_done_callback(self._on_engine_done)
         _logger.info("Engine started.")
 
         self.running_event.set()
+
+    def _on_engine_done(self, task: asyncio.Task) -> None:
+        """
+        Supervise the engine task. Logs when an exception happens
+        and cleans when is done.
+        """
+        if task.cancelled():
+            # Normal shutdown path (stop_process), nothing to report.
+            return
+
+        exc = task.exception()
+        if exc is None:
+            _logger.info(f"Engine task for process '{self.process_id}' finished.")
+            self.running_event.clear()
+            return
+
+        _logger.error(f"Engine task for process '{self.process_id}' crashed.",
+                      exc_info=exc)
+        self.running_event.clear()
+        # asyncio.Queue is unbounded, so put_nowait cannot raise QueueFull.
+        for q in plan_response_subscribers.get(self.process_id, set()):
+            q.put_nowait(NightPlansError(error=str(exc)))

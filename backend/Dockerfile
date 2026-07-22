@@ -23,6 +23,7 @@ RUN if [ "$GPP_GROUP" = "gpp-dev" ]; then \
 
 COPY ./backend/scheduler /home/scheduler
 COPY ./backend/definitions.py /home/definitions.py
+COPY ./version.py /home/version.py
 COPY ./backend/alembic /home/alembic
 COPY ./backend/alembic.ini /home/alembic.ini
 

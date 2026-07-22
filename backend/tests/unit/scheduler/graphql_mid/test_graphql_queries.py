@@ -103,3 +103,26 @@ async def test_schedule_query_with_wrong_parameters(set_observatory_properties, 
 
     result = await scheduler_schema.execute(query)
     assert result.data is None
+
+
+@pytest.mark.asyncio
+async def test_version_query_uses_version_file(scheduler_schema, monkeypatch):
+    # The version comes from the CI-generated version.py, not the env var.
+    monkeypatch.delenv("APP_VERSION", raising=False)
+
+    from scheduler.version import get_app_version
+
+    result = await scheduler_schema.execute("query { version { version } }")
+    assert result.errors is None
+    assert result.data["version"]["version"] == get_app_version()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("field", ["scheduleV2", "onDemandSchedule"])
+async def test_on_demand_fields_fail_cleanly_without_operation_process(scheduler_schema, field):
+    # Outside operation mode there is no operation process: the field must
+    # answer with a clean GraphQL error, not a KeyError/AttributeError crash.
+    result = await scheduler_schema.execute("query { %s }" % field)
+    assert result.errors is not None
+    message = result.errors[0].message
+    assert "operation process" in message.lower()

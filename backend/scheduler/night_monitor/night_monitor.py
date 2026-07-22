@@ -75,9 +75,12 @@ class NightMonitor:
         _logger.info("Shutting down the Night Monitor.")
         self._shutdown_event.set()
 
-        # Clean listener
+        # Clean listener; the night tracker has no shutdown_event of its own,
+        # so it must be cancelled explicitly too.
         if self._listener_task:
             self._listener_task.cancel()
+        if self._night_tracker_task:
+            self._night_tracker_task.cancel()
 
         # Wait for the task to end briefly
         tasks = []
@@ -85,6 +88,8 @@ class NightMonitor:
             tasks.append(self._listener_task)
         if self._consumer_task:
             tasks.append(self._consumer_task)
+        if self._night_tracker_task:
+            tasks.append(self._night_tracker_task)
 
         if tasks:
             done, pending = await asyncio.wait(tasks, timeout=1.0)

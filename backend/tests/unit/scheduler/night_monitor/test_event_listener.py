@@ -161,3 +161,56 @@ async def test_listen(event_listener, mock_client_async):
     }
     assert items_in_queue == expected_items, \
         f"Queue items don't match. Got: {items_in_queue}, Expected: {expected_items}"
+
+@pytest.mark.asyncio
+async def test_listen_logs_producer_failure(event_listener, mock_client_async):
+    """A producer that dies with an unretryable error must be logged, not
+    silently swallowed by the gather."""
+    mock_source = MagicMock()
+    mock_source.source_type = EventSourceType.ODB
+
+    def failing_factory(session):
+        raise RuntimeError("subscription exploded")
+
+    ok_factory = lambda session: mock_subscription_generator(['odb_data'])
+
+    mock_source.subscriptions.return_value = [
+        ('observation_edit', failing_factory, mock_client_async),
+        ('program_edit', ok_factory, mock_client_async),
+    ]
+    event_listener._sources = [mock_source]
+
+    with patch('scheduler.night_monitor.event_listener._logger') as mock_logger:
+        await event_listener.listen()
+
+    error_messages = [str(call) for call in mock_logger.error.call_args_list]
+    assert any('observation_edit' in message for message in error_messages), \
+        f"Expected an error log for the dead 'observation_edit' producer, got: {error_messages}"
+
+
+@pytest.mark.asyncio
+async def test_listen_cancellation_is_not_logged_as_failure(event_listener, mock_client_async):
+    """Shutdown cancellation is not a producer death: no error log."""
+    mock_source = MagicMock()
+    mock_source.source_type = EventSourceType.ODB
+
+    async def never_ending_generator(session):
+        while True:
+            await asyncio.sleep(3600)
+            yield 'never'
+
+    mock_source.subscriptions.return_value = [
+        ('observation_edit', never_ending_generator, mock_client_async),
+    ]
+    event_listener._sources = [mock_source]
+
+    with patch('scheduler.night_monitor.event_listener._logger') as mock_logger:
+        listen_task = asyncio.create_task(event_listener.listen())
+        await asyncio.sleep(0.01)
+        listen_task.cancel()
+        try:
+            await listen_task
+        except asyncio.CancelledError:
+            pass
+
+    mock_logger.error.assert_not_called()

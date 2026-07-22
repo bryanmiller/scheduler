@@ -1,7 +1,6 @@
 # Copyright (c) 2016-2024 Association of Universities for Research in Astronomy, Inc. (AURA)
 # For license information see LICENSE or https://opensource.org/licenses/BSD-3-Clause
 import asyncio
-from os import environ
 from typing import AsyncGenerator, Dict
 from datetime import datetime, UTC
 from zoneinfo import ZoneInfo
@@ -20,6 +19,7 @@ from scheduler.services.logger_factory import create_logger
 from scheduler.shared_queue import plan_response_subscribers, build_parameters_subscribers
 from scheduler.clients.gpp import gpp
 from scheduler.services.visibility_aggregator import coordination
+from scheduler.version import get_app_version
 
 from .types import (SPlans, SNightTimelines, NewNightPlans, NightPlansError, Version, SRunSummary,
                     NewPlansRT, NightPlansResponseRT, NightTimesResponse, BuildParametersInput, BuildParametersResponse,
@@ -66,13 +66,31 @@ def sync_rt_schedule(params: SchedulerParameters, night_start_time: Time, night_
 
 active_subscriptions: Dict[str, asyncio.Queue] = {}
 
+_schedule_tasks: set = set()
+
+async def _run_schedule_and_publish(schedule_id: str, params: SchedulerParameters) -> None:
+    """Run the validation schedule off-loop and publish the outcome (plans or
+    a NightPlansError) to every subscriber of schedule_id."""
+    try:
+        result = await asyncio.to_thread(sync_schedule, params)
+    except Exception as e:
+        _logger.exception(f"Validation schedule for '{schedule_id}' failed.")
+        result = NightPlansError(error=str(e))
+
+    queues = plan_response_subscribers.get(schedule_id, set())
+    if not queues:
+        _logger.warning(f"Schedule '{schedule_id}' finished but has no subscribers; "
+                        f"result dropped.")
+    for q in queues:
+        await q.put(result)
+
 
 @strawberry.type
 class Query:
 
     @strawberry.field
     def version(self) -> Version:
-        return Version(version=environ['APP_VERSION'], changelog=[])
+        return Version(version=get_app_version(), changelog=[])
 
     @strawberry.field
     async def schedule(self, schedule_id: str, new_schedule_input: CreateNewScheduleInput) -> str:
@@ -100,25 +118,19 @@ class Query:
                                      new_schedule_input.num_nights_to_schedule,
                                      programs_list)
 
-        task = asyncio.to_thread(sync_schedule, params)
+        task = asyncio.create_task(_run_schedule_and_publish(schedule_id, params))
+        _schedule_tasks.add(task)
+        task.add_done_callback(_schedule_tasks.discard)
 
-        if schedule_id not in plan_response_subscribers:
-            plan_response_subscribers[schedule_id] = set()
-            client_queue = asyncio.Queue()
-            plan_response_subscribers[schedule_id].add(client_queue)
-            queues = plan_response_subscribers[schedule_id]
-        else:
-            queues = plan_response_subscribers[schedule_id]
-
-        # Is only one queue anyway as the process is subscribed by only one client.
-        for q in queues:
-            await q.put(task)
-        _logger.info(f"Plan is on the queue! for: {schedule_id}\n{params}")
+        _logger.info(f"Scheduling run started for: {schedule_id}\n{params}")
         return f'Plan is on the queue! for {schedule_id}'
 
     @strawberry.field
     async def schedule_v2(self)-> str:
         op_process = process_manager.get_operation_process()
+        if op_process is None:
+            raise ValueError("No operation process is running: schedule_v2 is only "
+                             "available in OPERATION mode.")
 
         # Schedule event with None time to compute the plan from start of the night
         await op_process.scheduler_queue.add_schedule_event(
@@ -133,6 +145,9 @@ class Query:
     @strawberry.field
     async def on_demand_schedule(self)-> str:
         op_process = process_manager.get_operation_process()
+        if op_process is None:
+            raise ValueError("No operation process is running: on_demand_schedule is "
+                             "only available in OPERATION mode.")
 
         # Compute plan starting from the current time
         await op_process.scheduler_queue.add_schedule_event(
