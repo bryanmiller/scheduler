@@ -33,8 +33,9 @@ def main(*,
     asyncio.run(init_db_engine())
 
     # Parsed program file (this replaces the program picker from Schedule)
-    with open(programs_ids, 'r') as file:
-        programs_list = [line.strip() for line in file if line.strip()[0] != '#']
+    # with open(programs_ids, 'r') as file:
+    #     programs_list = [line.strip() for line in file if line.strip()[0] != '#']
+    programs_list = ['p-1243']
 
     # Create Parameters
     # params = SchedulerParameters(start=Time("2025-09-30 08:00:00", format='iso', scale='utc'),
@@ -46,11 +47,11 @@ def main(*,
     # params=SchedulerParameters(start=datetime.fromisoformat("2026-03-31T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     #                             end = datetime.fromisoformat("2026-04-14T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     # XT4
-        params=SchedulerParameters(start=datetime.fromisoformat("2026-07-04T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    params=SchedulerParameters(start=datetime.fromisoformat("2026-07-04T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
                                     end = datetime.fromisoformat("2026-07-10T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
                                # sites=ALL_SITES,
-                               # sites=[Site.GN],
-                               sites=[Site.GS],
+                               sites=[Site.GN],
+                               # sites=[Site.GS],
                                mode=SchedulerModes.SIMULATION,
                                ranker_parameters=RankerParameters(vis_power=1.0, air_power=0.0),
                                semester_visibility=False,
@@ -67,6 +68,7 @@ def main(*,
 
 if __name__ == '__main__':
     t0 = time.time()
-    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_program_ids.txt')
-    main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_gs_xt4.txt')
+    progid_file = Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_program_ids.txt'
+    # progid_file = Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_gs_xt4.txt'
+    main(programs_ids=progid_file)
     print(f'Completed in {(time.time() - t0) / 60.} min')

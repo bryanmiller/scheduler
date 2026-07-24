@@ -136,7 +136,7 @@ class GppProgramProvider(ProgramProvider):
     _CAL_OBSERVE_TYPES = frozenset(['FLAT', 'ARC', 'DARK', 'BIAS'])
 
     _site_for_inst = {'GMOS_NORTH': Site.GN, 'GMOS_SOUTH': Site.GS, 'FLAMINGOS2': Site.GS, 'IGRINS2': Site.GN,
-                      'GHOST': Site.GS}
+                      'GHOST': Site.GS, 'GNIRS': Site.GN}
 
     _gmos_filters = {'GMOS-S': ['U_PRIME', 'G_PRIME', 'R_PRIME', 'I_PRIME', 'Z_PRIME', 'Z', 'Y', 'GG455', 'OG515',
                                     'RG610', 'CA_T', 'F396N', 'OIII', 'OIIIC', 'HE_II', 'HE_IIC', 'OVI', 'OVIC',
@@ -151,7 +151,7 @@ class GppProgramProvider(ProgramProvider):
 
     # Translate instrument names to use the OCS Resources
     _gpp_inst_to_ocs = {'GMOS_NORTH': 'GMOS-N', 'GMOS_SOUTH': 'GMOS-S', 'FLAMINGOS2': 'Flamingos2',
-                        'IGRINS2': 'IGRINS-2', 'GHOST': 'GHOST'}
+                        'IGRINS2': 'IGRINS-2', 'GHOST': 'GHOST', 'GNIRS': 'GNIRS',}
 
     # GPP GMOS built-in GPU name to barcode
     # ToDo: Eventually this needs to come from another source, e.g. Resource, ICTD, decide whether to use name or barcode
@@ -366,7 +366,7 @@ class GppProgramProvider(ProgramProvider):
 
     class _FPUKeys:
         # GSAOI = 'instrument:utilityWheel'
-        # GNIRS = 'instrument:slitWidth'
+        GNIRS = 'fpu'
         GMOSN = 'fpu'
         # GPI = 'instrument:observingMode'
         F2 = 'fpu'
@@ -380,6 +380,7 @@ class GppProgramProvider(ProgramProvider):
         F2 = 'disperser'
         GMOSS = 'grating'
         GHOST = 'resolution_mode'
+        GNIRS = 'grating'
 
     class _InstrumentKeys:
         NAME = 'instrument:name'
@@ -392,7 +393,7 @@ class GppProgramProvider(ProgramProvider):
         # 'GPI': _FPUKeys.GPI,
         'Flamingos2': _FPUKeys.F2,
         # 'NIFS': _FPUKeys.NIFS,
-        # 'GNIRS': _FPUKeys.GNIRS,
+        # 'GNIRS': _FPUKeys.GNIRS,  # uncomment once we have the FPU availability
         'GMOS-N': _FPUKeys.GMOSN,
         'GMOS-S': _FPUKeys.GMOSS,
         # 'NIRI': _FPUKeys.NIRI
@@ -403,7 +404,7 @@ class GppProgramProvider(ProgramProvider):
         # 'GPI': _DISPKeys.GPI,
         'Flamingos2': _DISPKeys.F2,
         # 'NIFS': _DISPKeys.NIFS,
-        # 'GNIRS': _DISPKeys.GNIRS,
+        # 'GNIRS': _DISPKeys.GNIRS,  # uncomment once we have the disperser availability
         'GMOS-N': _DISPKeys.GMOSN,
         'GMOS-S': _DISPKeys.GMOSS,
         'GHOST': _DISPKeys.GHOST,
@@ -911,6 +912,8 @@ class GppProgramProvider(ProgramProvider):
         instrument = GppProgramProvider._gpp_inst_to_ocs[data['instrument']]
         mode = basic_name(data['mode'])
 
+        # Note: as of July 23, 2026 the following will not work for GNIRS spectroscopy
+        # For GNIRS spectroscopy (SLIT and IFU) the config is in 'gnirs_spectroscopy'
         instrument_config = data.get(mode.title().lower())
         # print(instrument_config)
         # print(instrument_config.keys())
