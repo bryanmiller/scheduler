@@ -1024,7 +1024,7 @@ class GppProgramProvider(ProgramProvider):
         # obs_id = f"{program_id.id}-{internal_id.replace('-', '')}"
         obs_id = data[GppProgramProvider._ObsKeys.ID]['label'] if data.get(GppProgramProvider._ObsKeys.ID) \
             else f"{program_id.id}-{internal_id.replace('-', '')}"
-        print(f'\n\t\t parse_observation {obs_id}')
+        # print(f'\n\t\t parse_observation {obs_id}')
 
         order = None
         obs_class = ObservationClass.NONE
