@@ -14,8 +14,6 @@ from lucupy.minimodel.program import ProgramTypes
 
 from scheduler.config import config, ConfigurationError
 from scheduler.core.components.optimizer.optimizers import BaseOptimizer, Optimizers
-from scheduler.core.components.ranker import Ranker
-from scheduler.core.components.ranker.rankers import Rankers
 
 
 __all__ = [
@@ -25,7 +23,6 @@ __all__ = [
     'CollectorBlueprint',
     'SelectorBlueprint',
     'OptimizerBlueprint',
-    'RankerBlueprint',
 ]
 
 
@@ -117,25 +114,6 @@ class OptimizerBlueprint(Blueprint):
     def __iter__(self):
         return iter((self.algorithm,))
 
-@final
-class RankerBlueprint(Blueprint):
-    """Blueprint for the Ranker.
-    This is based on the configuration in config.yml.
-    """
-
-    def __init__(self, algorithm: str) -> None:
-        self.algorithm = RankerBlueprint._parse_ranker(algorithm)
-
-    @staticmethod
-    def _parse_ranker(algorithm_name: str) -> Ranker:
-        try:
-            instantiator = Rankers[algorithm_name.upper()]
-            return instantiator.value()
-        except KeyError:
-            raise ConfigurationError('Ranker', config.ranker.name)
-
-    def __iter__(self):
-        return iter((self.algorithm,))
 
 @final
 class Blueprints:
@@ -145,4 +123,3 @@ class Blueprints:
     selector: SelectorBlueprint = SelectorBlueprint(config.selector.buffer_type,
                                                     config.selector.buffer_amount)
     optimizer: OptimizerBlueprint = OptimizerBlueprint(config.optimizer.name)
-    # ranker: RankerBlueprint = RankerBlueprint(config.ranker.name)
