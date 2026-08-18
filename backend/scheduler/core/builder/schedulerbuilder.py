@@ -8,11 +8,12 @@ from datetime import datetime
 from astropy.time import Time
 from lucupy.minimodel import Semester, Site
 
-from .blueprint import CollectorBlueprint, SelectorBlueprint, OptimizerBlueprint
+from .blueprint import CollectorBlueprint, SelectorBlueprint, OptimizerBlueprint, RankerBlueprint
 from scheduler.core.components.collector import Collector
 from scheduler.core.components.selector import Selector
 from scheduler.core.components.selector.timebuffer import create_time_buffer
 from scheduler.core.components.optimizer import Optimizer
+from scheduler.core.components.ranker import Ranker
 from scheduler.core.sources.sources import Sources
 from scheduler.core.events.queue import EventQueue
 
@@ -69,6 +70,10 @@ class SchedulerBuilder(ABC):
     @staticmethod
     def build_optimizer(blueprint: OptimizerBlueprint) -> Optimizer:
         return Optimizer(algorithm=blueprint.algorithm)
+
+    @staticmethod
+    def build_ranker(blueprint: RankerBlueprint) -> Ranker:
+        return Ranker(algorithm=blueprint.algorithm)
 
     @abstractmethod
     def _setup_event_queue(self,
