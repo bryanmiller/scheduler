@@ -4,6 +4,7 @@
 from dataclasses import dataclass
 from typing import final, Dict
 
+from time import time
 import numpy.typing as npt
 import numpy as np
 from dotenv import set_key
@@ -43,17 +44,22 @@ class SCP:
             site: Site,
             night_indices: npt.NDArray[NightIndex],
             current_timeslot: TimeslotIndex) -> Plans:
+        tn0 = time()
         selection = self.selector.select(night_indices=night_indices,
                                          sites=frozenset([site]),
                                          starting_time_slots={site: {night_idx: current_timeslot
                                                                      for night_idx in night_indices}},
                                          ranker=self.ranker)
+        tn1 = time()
+        print(f"\tSelector at timeslot {current_timeslot} finished in {(tn1 - tn0) / 60.0} min")
+
         # Right now the optimizer generates List[Plans], a list of plans indexed by
         # every night in the selection. We only want the first one, which corresponds
         # to the current night index we are looping over.
         # _logger.debug(f'Running optimizer for {site.site_name} for night {night_idx} '
         #               f'starting at time slot {current_timeslot}.')
         plans = self.optimizer.schedule(selection)[0]
+        print(f"\tOptimizer finished in {(time() - tn1) / 60.0} min")
         return plans
 
     def run_rt(self,

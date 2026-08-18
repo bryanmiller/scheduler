@@ -35,6 +35,7 @@ def main(*,
     # Parsed program file (this replaces the program picker from Schedule)
     # with open(programs_ids, 'r') as file:
     #     programs_list = [line.strip() for line in file if line.strip()[0] != '#']
+    # programs_list = ['p-1243', 'p-11ba', 'p-140a']
     programs_list = ['p-1260']
 
     # Create Parameters
@@ -47,11 +48,11 @@ def main(*,
     # params=SchedulerParameters(start=datetime.fromisoformat("2026-03-31T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     #                             end = datetime.fromisoformat("2026-04-14T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     # XT4
-        params=SchedulerParameters(start=datetime.fromisoformat("2026-07-04T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    params=SchedulerParameters(start=datetime.fromisoformat("2026-07-04T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
                                     end = datetime.fromisoformat("2026-07-10T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-                               # sites=ALL_SITES,
+                               sites=ALL_SITES,
                                # sites=[Site.GN],
-                               sites=[Site.GS],
+                               # sites=[Site.GS],
                                mode=SchedulerModes.SIMULATION,
                                ranker_parameters=RankerParameters(vis_power=1.0, air_power=0.0),
                                semester_visibility=False,
