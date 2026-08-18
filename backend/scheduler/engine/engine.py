@@ -80,6 +80,7 @@ class Engine:
 
         optimizer = builder.build_optimizer(Blueprints.optimizer)
 
+        # Simple selection of different rankers, for now they must use the same parameters
         match config.ranker.name.upper():
             case 'DEFAULT':
                 ranker = DefaultRanker(collector,
@@ -93,12 +94,6 @@ class Engine:
                                params = self.params.ranker_parameters,)
             case _:
                 raise ConfigurationError('Ranker', config.ranker.name)
-
-        # ranker = builder.build_ranker(collector,
-        #                        self.params.night_indices,
-        #                        self.params.sites,
-        #                        params=self.params.ranker_parameters,
-        #                               blueprint=Blueprints.ranker)
 
         return SCP(collector, selector, optimizer, ranker)
 
@@ -206,7 +201,7 @@ class Engine:
                 nightly_timeline.set_night_length(night_idx, site, night_start, night_end)
 
             tn1 = time()
-            print(f'Night {night_idx + 1} scheduled in {(tn1 - tn0) / 60.} min \n')
+            print(f'Night {night_idx + 1} scheduled in {(tn1 - tn0)} sec \n')
             # nightly_timeline.display(night_idx_sel=night_idx)
             tn0 = tn1
 
