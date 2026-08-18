@@ -9,6 +9,7 @@ from lucupy.timeutils import time2slots
 
 from .params import SchedulerParameters
 from scheduler.core.scp.scp import SCP
+from scheduler.config import config, ConfigurationError
 
 from scheduler.core.builder.modes import dispatch_with
 from scheduler.core.builder import Blueprints
@@ -25,7 +26,7 @@ __all__ = [
     'Engine'
 ]
 
-from ..core.components.ranker import DefaultRanker
+from ..core.components.ranker import DefaultRanker, AdditiveRanker
 
 from ..core.events.cycle.cycle import EventCycle
 
@@ -60,6 +61,7 @@ class Engine:
             for site in self.params.sites
         }
 
+        t0 = time()
         collector = builder.build_collector(start=self.params.start,
                                             end=self.params.end_vis,
                                             num_of_nights=self.params.num_nights_to_schedule,
@@ -69,16 +71,36 @@ class Engine:
                                             night_times=night_times,
                                             program_list=self.params.programs_list,
                                             use_local_visibility=self.params.use_local_visibility)
+        t1 = time()
+        print(f'Collector built in {(t1 - t0) / 60.} min')
 
         selector = builder.build_selector(collector=collector,
                                           num_nights_to_schedule=self.params.num_nights_to_schedule,
                                           blueprint=Blueprints.selector)
 
         optimizer = builder.build_optimizer(Blueprints.optimizer)
-        ranker = DefaultRanker(collector,
+
+        # Simple approach
+        # match config.ranker.name.upper():
+        #     case 'DEFAULT':
+        #         ranker = DefaultRanker(collector,
+        #                        self.params.night_indices,
+        #                        self.params.sites,
+        #                        params = self.params.ranker_parameters,)
+        #     case 'ADDITIVE':
+        #         ranker = AdditiveRanker(collector,
+        #                        self.params.night_indices,
+        #                        self.params.sites,
+        #                        params = self.params.ranker_parameters,)
+        #     case _:
+        #         raise ConfigurationError('Ranker', config.ranker.name)
+
+        # Using optimizer-like approach
+        ranker = builder.build_ranker(collector,
                                self.params.night_indices,
                                self.params.sites,
-                               params=self.params.ranker_parameters)
+                               params=self.params.ranker_parameters,
+                                      blueprint=Blueprints.ranker)
 
         return SCP(collector, selector, optimizer, ranker)
 
@@ -176,7 +198,7 @@ class Engine:
         queue = EventQueue(self.params.night_indices, self.params.sites)
         self._setup(scp, queue)
         event_cycle = EventCycle(self.params, queue, scp)
-        # tn0 = time()
+        tn0 = time()
         for night_idx in sorted(self.params.night_indices):
             # print(f'Engine: starting night {night_idx + 1}: {scp.collector.time_grid[night_idx]}')
             for site in sorted(self.params.sites, key=lambda site: site.name):
@@ -185,10 +207,10 @@ class Engine:
                 night_start, night_end = scp.collector.get_night_length(site, night_idx)
                 nightly_timeline.set_night_length(night_idx, site, night_start, night_end)
 
-            # tn1 = time()
-            # print(f'Night {night_idx + 1} scheduled in {(tn1 - tn0) / 60.} min')
+            tn1 = time()
+            print(f'Night {night_idx + 1} scheduled in {(tn1 - tn0) / 60.} min \n')
             # nightly_timeline.display(night_idx_sel=night_idx)
-            # tn0 = tn1
+            tn0 = tn1
 
         # TODO: Add plan summary to nightlyTimeline
         run_summary = StatCalculator.calculate_stitched_timeline_stats(nightly_timeline,

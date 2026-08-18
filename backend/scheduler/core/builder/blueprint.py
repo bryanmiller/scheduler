@@ -145,4 +145,4 @@ class Blueprints:
     selector: SelectorBlueprint = SelectorBlueprint(config.selector.buffer_type,
                                                     config.selector.buffer_amount)
     optimizer: OptimizerBlueprint = OptimizerBlueprint(config.optimizer.name)
-    # ranker: RankerBlueprint = RankerBlueprint(config.ranker.name)
+    ranker: RankerBlueprint = RankerBlueprint(config.ranker.name)
