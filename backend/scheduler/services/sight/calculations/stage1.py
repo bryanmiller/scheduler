@@ -175,7 +175,10 @@ def _calculate_sidereal_coordinates(
     ras = target.base_ra + pm_ra * time_offset_years
     decs = target.base_dec + pm_dec * time_offset_years
 
-    return SkyCoord(ra=ras * u.deg, dec=decs * u.deg, frame='icrs')
+    coord = SkyCoord(ra=ras * u.deg, dec=decs * u.deg, frame='icrs')
+
+    # Finally, precess
+    return coord.transform_to(sky.current_geocent_frame(mid_time))
 
 
 # =============================================================================
