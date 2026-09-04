@@ -35,8 +35,11 @@ def main(*,
     # Parsed program file (this replaces the program picker from Schedule)
     # with open(programs_ids, 'r') as file:
     #     programs_list = [line.strip() for line in file if line.strip()[0] != '#']
-    # programs_list = ['p-1243', 'p-11ba', 'p-140a']
-    programs_list = ['p-1260']
+    # programs_list = ['p-1243', 'p-11ba', 'p-140a', 'p-ccb', 'p-140c', 'p-12be']
+    # programs_list = None
+    # programs_list = ['p-1260'] # ToO
+    # programs_list = ['p-12be'] # visitor instruments
+    programs_list = ["p-140c", "p-1384"]
 
     # Create Parameters
     # params = SchedulerParameters(start=Time("2025-09-30 08:00:00", format='iso', scale='utc'),
@@ -47,12 +50,13 @@ def main(*,
     #                             end = datetime.fromisoformat("2026-05-11T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     # params=SchedulerParameters(start=datetime.fromisoformat("2026-03-31T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     #                             end = datetime.fromisoformat("2026-04-14T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-    # XT4
-    params=SchedulerParameters(start=datetime.fromisoformat("2026-07-04T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-                                    end = datetime.fromisoformat("2026-07-10T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-                               sites=ALL_SITES,
-                               # sites=[Site.GN],
-                               # sites=[Site.GS],
+    # params=SchedulerParameters(start=datetime.fromisoformat("2026-07-24T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    #                                 end = datetime.fromisoformat("2026-07-31T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    params=SchedulerParameters(start=datetime.fromisoformat("2026-09-04T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+                                    end = datetime.fromisoformat("2026-09-14T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+                               # sites=ALL_SITES,
+                               sites=[Site.GN],
+    #                            sites=[Site.GS],
                                mode=SchedulerModes.SIMULATION,
                                ranker_parameters=RankerParameters(vis_power=1.0, air_power=0.0),
                                semester_visibility=False,
@@ -64,7 +68,7 @@ def main(*,
     # outpath = os.path.join(os.environ['HOME'], 'gemini', 'sciops', 'softdevel', 'Queue_planning', 'sched_output')
     # timelines.display(output=os.path.join(outpath, 'dev_niri_s20181001_20250715.txt'))
     # Display to stdout
-    timelines.display()
+    timelines.display(stitched=True)
     print(plan_summary)
 
 if __name__ == '__main__':
