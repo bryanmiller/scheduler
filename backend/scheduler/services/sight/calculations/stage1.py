@@ -13,6 +13,9 @@ from lucupy.minimodel import TargetTag
 from scheduler.services.sight.calculations.arrays import pack_array, unpack_array
 from scheduler.services.sight.calculations.night_events import site_to_earth_location
 
+from scheduler.services import logger_factory
+logger = logger_factory.create_logger(__name__)
+
 if TYPE_CHECKING:
     from scheduler.services.sight.database.models import Site, Target, NightEvent
 
@@ -95,7 +98,7 @@ def calculate_stage1(
     # Calculate hour angle
     hourangle = lst - coord.ra
     hourangle.wrap_at(12.0 * u.hour, inplace=True)
-    
+
     # Calculate altitude, azimuth, parallactic angle
     alt, az, par_ang = sky.Altitude.above(coord.dec, hourangle, location.lat)
     
@@ -170,12 +173,15 @@ def _calculate_sidereal_coordinates(
     
     # Time offset in years
     time_offset_years = (mid_time - epoch_time).to(u.yr).value
-    
+
     # Apply proper motion
     ras = target.base_ra + pm_ra * time_offset_years
     decs = target.base_dec + pm_dec * time_offset_years
-    
-    return SkyCoord(ra=ras * u.deg, dec=decs * u.deg, frame='icrs')
+
+    coord = SkyCoord(ra=ras * u.deg, dec=decs * u.deg, frame='icrs')
+
+    # Finally, precess
+    return coord.transform_to(sky.current_geocent_frame(mid_time))
 
 
 # =============================================================================
