@@ -38,8 +38,8 @@ def main(*,
     # programs_list = ['p-1243', 'p-11ba', 'p-140a', 'p-ccb', 'p-140c', 'p-12be']
     # programs_list = None
     # programs_list = ['p-1260'] # ToO
-    # programs_list = ['p-12be'] # visitor instruments
-    programs_list = ["p-140c", "p-1384"]
+    programs_list = ['p-12be'] # visitor instruments
+    # programs_list = ["p-140c", "p-1384"] # GMOS MOS/IFU
 
     # Create Parameters
     # params = SchedulerParameters(start=Time("2025-09-30 08:00:00", format='iso', scale='utc'),
@@ -50,13 +50,18 @@ def main(*,
     #                             end = datetime.fromisoformat("2026-05-11T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     # params=SchedulerParameters(start=datetime.fromisoformat("2026-03-31T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     #                             end = datetime.fromisoformat("2026-04-14T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-    # params=SchedulerParameters(start=datetime.fromisoformat("2026-07-24T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    # `Alopeke
+    # params=SchedulerParameters(start=datetime.fromisoformat("2026-07-25T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     #                                 end = datetime.fromisoformat("2026-07-31T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-    params=SchedulerParameters(start=datetime.fromisoformat("2026-09-04T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    # Zorro
+    # params=SchedulerParameters(start=datetime.fromisoformat("2026-11-25T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    #                                 end = datetime.fromisoformat("2026-12-20T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    # No visitors, MOS/IFU (MAROON-X on 2026-09-03
+    params=SchedulerParameters(start=datetime.fromisoformat("2026-09-03T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
                                     end = datetime.fromisoformat("2026-09-14T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-                               # sites=ALL_SITES,
-                               sites=[Site.GN],
-    #                            sites=[Site.GS],
+                               sites=ALL_SITES,
+                               # sites=[Site.GN],
+                               # sites=[Site.GS],
                                mode=SchedulerModes.SIMULATION,
                                ranker_parameters=RankerParameters(vis_power=1.0, air_power=0.0),
                                semester_visibility=False,
