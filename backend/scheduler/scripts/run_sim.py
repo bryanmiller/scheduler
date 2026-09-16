@@ -36,9 +36,9 @@ def main(*,
     # with open(programs_ids, 'r') as file:
     #     programs_list = [line.strip() for line in file if line.strip()[0] != '#']
     # programs_list = ['p-1243', 'p-11ba', 'p-140a', 'p-ccb', 'p-140c', 'p-12be']
-    # programs_list = None
+    programs_list = None
     # programs_list = ['p-1260'] # ToO
-    programs_list = ['p-12be'] # visitor instruments
+    # programs_list = ['p-12be'] # visitor instruments
     # programs_list = ["p-140c", "p-1384"] # GMOS MOS/IFU
 
     # Create Parameters
@@ -57,10 +57,12 @@ def main(*,
     # params=SchedulerParameters(start=datetime.fromisoformat("2026-11-25T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     #                                 end = datetime.fromisoformat("2026-12-20T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     # No visitors, MOS/IFU (MAROON-X on 2026-09-03
-    params=SchedulerParameters(start=datetime.fromisoformat("2026-09-03T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-                                    end = datetime.fromisoformat("2026-09-14T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-                               sites=ALL_SITES,
-                               # sites=[Site.GN],
+    # params=SchedulerParameters(start=datetime.fromisoformat("2026-09-03T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    #                                 end = datetime.fromisoformat("2026-09-14T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    params=SchedulerParameters(start=datetime.fromisoformat("2026-09-15T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+                                    end = datetime.fromisoformat("2026-09-29T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+                               # sites=ALL_SITES,
+                               sites=[Site.GN],
                                # sites=[Site.GS],
                                mode=SchedulerModes.SIMULATION,
                                ranker_parameters=RankerParameters(vis_power=1.0, air_power=0.0),
