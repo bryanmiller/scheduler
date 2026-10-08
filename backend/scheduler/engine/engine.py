@@ -83,11 +83,11 @@ class Engine:
         # nc = collector.night_configurations(Site.GN, [0])
         # print(f'\n GN 0: {nc}')
 
-        # progids = collector.get_program_ids()
+        progids = collector.get_program_ids()
         # print(progids)
         p = None
-        # if ProgramID('GN-2018B-Q-134') in progids:
-        #     p = collector.get_program(ProgramID('GN-2018B-Q-134'))
+        if ProgramID('GN-2018B-Q-134') in progids:
+            p = collector.get_program(ProgramID('GN-2018B-Q-134'))
         # if ProgramID('GN-2018B-Q-111') in progids: # Alopeke
         #     p = collector.get_program(ProgramID('GN-2018B-Q-111'))
         # if ProgramID('G-2026B-ENG-GMOSN-01') in progids:
