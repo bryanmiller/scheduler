@@ -300,7 +300,7 @@ class SourceFileHandlerResponse:
 
 NewScheduleResponse = NewScheduleSuccess | NewScheduleError
 
-CC = strawberry.enum(CloudCover)
+# CC = strawberry.enum(CloudCover)
 
 
 @strawberry.type
