@@ -6,6 +6,7 @@ from typing import Tuple
 from astropy.time import Time
 
 from lucupy.timeutils import time2slots
+from lucupy.minimodel import ProgramID
 
 from .params import SchedulerParameters
 from scheduler.core.scp.scp import SCP
