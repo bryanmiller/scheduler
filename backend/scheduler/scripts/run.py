@@ -64,6 +64,7 @@ def main(*,
     # timelines.display(output=os.path.join(outpath, 'gn_1min_s20180801_184_20260817.txt'))
     # timelines.display(output=os.path.join(outpath, 'gs_1min_s20180801_48_20260827_stitched.txt'), stitched=True)
     # timelines.display(output=os.path.join(outpath, 'gs_1min_s20180801_48_20260826.txt'), stitched=False)
+    timelines.display(output=os.path.join(outpath, 'gn_1min_s20181019_4_20261018_gsched-785.txt'), stitched=False)
 
     # timelines.display()
     timelines.display(stitched=False)
