@@ -37,7 +37,7 @@ def main(*,
     #     programs_list = [line.strip() for line in file if line.strip()[0] != '#']
     # programs_list = ['p-1243', 'p-11ba', 'p-140a', 'p-ccb', 'p-140c', 'p-12be']
     # programs_list = None
-    programs_list = ['p-1260'] # ToO in dev
+    programs_list = ['p-1260', 'p-183b'] # ToO in dev
     # programs_list = ['p-12be'] # visitor instruments
     # programs_list = ["p-140c", "p-1384"] # GMOS MOS/IFU
     # programs_list = ['p-c79']  # GNIRS ToO in production
