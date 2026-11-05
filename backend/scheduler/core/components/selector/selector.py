@@ -951,7 +951,7 @@ class Selector(SchedulerComponent):
             )
             # Apply IQ model to get FWHM over the sky
             actual_iq = np.asarray(self.iq_model(az, airmass, fwhm_zenith))
-            # print(f'{actual_conditions.iq[0].value} {mean_wavelen} {fwhm_zenith} {min(actual_iq)} {max(actual_iq)}')
+            print(f'{actual_conditions.iq[0].value} {mean_wavelen} {fwhm_zenith} {min(actual_iq)} {max(actual_iq)}')
 
             # A representative percentile associated with the constraint to calculate the 'better conditions' penalty
             actual_iq_pctile = np.asarray(actual_conditions.iq)
