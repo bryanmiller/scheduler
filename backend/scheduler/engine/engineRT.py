@@ -24,6 +24,7 @@ from scheduler.graphql_mid.types import NightPlansError
 from scheduler.night_monitor.event_sources import WeatherEventSource
 from scheduler.services.visibility_aggregator import coordination
 from lucupy.minimodel import VariantSnapshot, ImageQuality, CloudCover, Site, WaterVapor
+from lucupy.minimodel import ProgramID, Band
 from astropy.coordinates import Angle
 from astropy import units as u
 
@@ -145,6 +146,20 @@ class EngineRT:
                 night_times=night_times,
                 program_list=programs_list,
             )
+
+        nc = collector.night_configurations(Site.GS, [0])
+        # print(f'\n GS night config: {nc}')
+
+        # progids = collector.get_program_ids()
+        # # print(progids)
+        # p = None
+        # if ProgramID('G-2026B-ENG-GMOSS-01') in progids:
+        #     p = collector.get_program(ProgramID('G-2026B-ENG-GMOSS-01'))
+        # if p is not None:
+        #     print(f"Program awarded: {p.program_awarded()}, Band 1: {p.program_awarded(Band(1))}")
+        #     print(f"Program used: {p.program_used()}, Band 1: {p.program_used(Band(1))}")
+        #     p.show()
+
 
         selector = builder.build_selector(
             collector=collector,
