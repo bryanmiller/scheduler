@@ -147,7 +147,7 @@ class EngineRT:
                 program_list=programs_list,
             )
 
-        nc = collector.night_configurations(Site.GS, [0])
+        # nc = collector.night_configurations(Site.GS, [0])
         # print(f'\n GS night config: {nc}')
 
         progids = collector.get_program_ids()
