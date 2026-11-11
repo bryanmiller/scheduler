@@ -43,8 +43,10 @@ def main(*,
     # programs_list = ["p-140c", "p-1384"] # GMOS MOS/IFU
     # programs_list = ['p-c79']  # GNIRS ToO in
     # programs_list = ['p-18ab']  # IGRINS-2 TW in dev
-    programs_list = ['p-ded']  # 26B F2 ENG in prd
-    # programs_list = ['p-cac', 'p-dee']  # 26B GMOS-S and GHOST ENG in prd
+    # programs_list = ['p-ded']  # 26B F2 ENG in prd
+    programs_list = ['p-cac', 'p-dee']  # 26B GMOS-S and GHOST ENG in prd
+    # programs_list = ['p-dbe']  # 26B-0312-Q in prd
+    # programs_list = ['p-db2']  # 26B-0301-Q in prd
 
     # Create Parameters
     # params = SchedulerParameters(start=Time("2025-09-30 08:00:00", format='iso', scale='utc'),
@@ -66,8 +68,8 @@ def main(*,
     #                                 end = datetime.fromisoformat("2026-09-14T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     # params=SchedulerParameters(start=datetime.fromisoformat("2026-09-15T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
     #                                 end = datetime.fromisoformat("2026-09-29T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-    params=SchedulerParameters(start=datetime.fromisoformat("2026-11-06T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
-                                    end = datetime.fromisoformat("2026-11-30T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+    params=SchedulerParameters(start=datetime.fromisoformat("2026-10-23T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
+                                    end = datetime.fromisoformat("2026-12-04T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
                                # sites=ALL_SITES,
                                # sites=[Site.GN],
                                sites=[Site.GS],

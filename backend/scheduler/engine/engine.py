@@ -76,7 +76,7 @@ class Engine:
         logger.debug(f'\nCollector built in {(t1 - t0) / 60.0} min')
         # print(f'Collector built in {(t1 - t0) / 60.} min')
 
-        from lucupy.minimodel import Band
+        from lucupy.minimodel import Band, Site
         # print_collector_info(collector)
         # nc = collector.night_configurations(Site.GS, [0])
         # print(f'\n GS 0: {nc}')
@@ -100,6 +100,8 @@ class Engine:
             p = collector.get_program(ProgramID('G-2026B-0134-Q'))
         elif ProgramID('G-2026B-ENG-GHOST-01') in progids:
             p = collector.get_program(ProgramID('G-2026B-ENG-GHOST-01'))
+        elif ProgramID('G-2026B-0312-Q') in progids:
+            p = collector.get_program(ProgramID('G-2026B-0312-Q'))
         if p is not None:
             print(f"Program awarded: {p.program_awarded()}, Band 1: {p.program_awarded(Band(1))}")
             print(f"Program used: {p.program_used()}, Band 1: {p.program_used(Band(1))}")

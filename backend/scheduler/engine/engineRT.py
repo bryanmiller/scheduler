@@ -150,15 +150,17 @@ class EngineRT:
         nc = collector.night_configurations(Site.GS, [0])
         # print(f'\n GS night config: {nc}')
 
-        # progids = collector.get_program_ids()
-        # # print(progids)
-        # p = None
+        progids = collector.get_program_ids()
+        # print(progids)
+        p = None
         # if ProgramID('G-2026B-ENG-GMOSS-01') in progids:
         #     p = collector.get_program(ProgramID('G-2026B-ENG-GMOSS-01'))
-        # if p is not None:
-        #     print(f"Program awarded: {p.program_awarded()}, Band 1: {p.program_awarded(Band(1))}")
-        #     print(f"Program used: {p.program_used()}, Band 1: {p.program_used(Band(1))}")
-        #     p.show()
+        # if ProgramID('G-2026B-0301-Q') in progids:
+        #     p = collector.get_program(ProgramID('G-2026B-0301-Q'))
+        if p is not None:
+            print(f"Program awarded: {p.program_awarded()}, Band 1: {p.program_awarded(Band(1))}")
+            print(f"Program used: {p.program_used()}, Band 1: {p.program_used(Band(1))}")
+            p.show()
 
 
         selector = builder.build_selector(
