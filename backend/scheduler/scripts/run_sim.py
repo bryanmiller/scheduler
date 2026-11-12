@@ -47,7 +47,8 @@ def main(*,
     # programs_list = ['p-cac', 'p-dee']  # 26B GMOS-S and GHOST ENG in prd
     # programs_list = ['p-dbe']  # 26B-0312-Q in prd
     # programs_list = ['p-db2']  # 26B-0301-Q in prd
-    programs_list = ['p-191d']  # 26B-0612-Q (26B-Q-336) in dev
+    # programs_list = ['p-cd8']  # 26B-0149-Q in prd
+    # programs_list = ['p-191d']  # 26B-0612-Q (26B-Q-336) in dev
 
     # Create Parameters
     # params = SchedulerParameters(start=Time("2025-09-30 08:00:00", format='iso', scale='utc'),
@@ -72,8 +73,8 @@ def main(*,
     params=SchedulerParameters(start=datetime.fromisoformat("2026-11-13T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
                                     end = datetime.fromisoformat("2026-12-31T08:00:00").replace(tzinfo=ZoneInfo("UTC")),
                                # sites=ALL_SITES,
-                               sites=[Site.GN],
-                               # sites=[Site.GS],
+                               # sites=[Site.GN],
+                               sites=[Site.GS],
                                mode=SchedulerModes.SIMULATION,
                                ranker_parameters=RankerParameters(),
                                semester_visibility=False,
@@ -91,5 +92,8 @@ def main(*,
 if __name__ == '__main__':
     t0 = time.time()
     # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_program_ids.txt')
-    main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_gs_xt4.txt')
+    # main(programs_ids=Path(ROOT_DIR) / 'scheduler' / 'data' / 'gpp_gs_xt4.txt')
+    home = os.environ['HOME']
+    print(home)
+    main(programs_ids= os.path.join(home,  'gemini' , 'sciops' , 'softdevel' , 'Process_and_Planning' , 'gpp_sv1_gs.txt'))
     print(f'Completed in {(time.time() - t0) / 60.} min')

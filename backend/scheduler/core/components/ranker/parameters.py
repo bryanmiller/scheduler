@@ -53,6 +53,8 @@ class RankerParameters:
     power: int = 2
     met_power: float = 2.0  # DefaultRanker: exponent. AdditiveRanker: linear weight.
     vis_power: float = 1.5  # DefaultRanker: exponent. AdditiveRanker: linear weight.
+    # met_power: float = 1.0  # DefaultRanker: exponent. AdditiveRanker: linear weight.
+    # vis_power: float = 1.0  # DefaultRanker: exponent. AdditiveRanker: linear weight.
     wha_power: float = 1.0  # DefaultRanker: exponent. AdditiveRanker: linear weight.
     air_power: float = 0.0  # Always an exponent: score /= min(airmass)**air_power.
     program_priority: float = 10.0
