@@ -100,8 +100,10 @@ class Engine:
             p = collector.get_program(ProgramID('G-2026B-0134-Q'))
         elif ProgramID('G-2026B-ENG-GHOST-01') in progids:
             p = collector.get_program(ProgramID('G-2026B-ENG-GHOST-01'))
-        elif ProgramID('G-2026B-0312-Q') in progids:
+        elif ProgramID('G-2026B-0312-Q') in progids: # prd
             p = collector.get_program(ProgramID('G-2026B-0312-Q'))
+        elif ProgramID('G-2026B-0612-Q') in progids: # dev
+            p = collector.get_program(ProgramID('G-2026B-0612-Q'))
         if p is not None:
             print(f"Program awarded: {p.program_awarded()}, Band 1: {p.program_awarded(Band(1))}")
             print(f"Program used: {p.program_used()}, Band 1: {p.program_used(Band(1))}")
