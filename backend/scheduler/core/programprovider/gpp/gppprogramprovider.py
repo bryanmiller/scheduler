@@ -1446,6 +1446,8 @@ class GppProgramProvider(ProgramProvider):
             # print(f'\t\t cal_role_value = {cal_role_value}')
             calibration_role = CalibrationRole[cal_role_value] if cal_role_value is not None else None
             # If a daytime calibration, ignore for now
+            if calibration_role is CalibrationRole.DAYTIME_ARC:
+                print(f'{obs_id} {CalibrationRole.DAYTIME_ARC}')
             if calibration_role in [
                 CalibrationRole.DAYTIME_CALIBRATION,
                 CalibrationRole.DAYTIME_PINHOLE,
@@ -1980,7 +1982,7 @@ class GppProgramProvider(ProgramProvider):
             else get_progid(data['root'])
         )
         # if GppProgramProvider._ProgramKeys.ID in data.keys() else ProgramID(internal_id)
-        # print(f'parse_program: {program_id.id}')
+        print(f'parse_program: {program_id.id}')
 
         # Parse the time accounting allocation data.
         # time_act_alloc = None # Program.allocations
