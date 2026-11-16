@@ -48,6 +48,8 @@ def main(*,
     # programs_list = ['p-dbe']  # 26B-0312-Q in prd
     # programs_list = ['p-db2']  # 26B-0301-Q in prd
     # programs_list = ['p-cd8']  # 26B-0149-Q in prd
+    # programs_list = ['p-cd8']  # 26B-0149-Q in prd
+    programs_list = ['p-d18', 'p-cb1', 'p-d38']  # 26B-0364-Q in prd, twice-sched telluric investigation
     # programs_list = ['p-191d']  # 26B-0612-Q (26B-Q-336) in dev
 
     # Create Parameters

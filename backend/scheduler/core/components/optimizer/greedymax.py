@@ -1199,12 +1199,12 @@ class GreedyMaxOptimizer(BaseOptimizer):
             # print(f'Adding {max_group_info.group_data.group.unique_id.id} MaxScore:{max_group_info.max_score:7.2f} '
             #       f'n_std:{max_group_info.n_std} obs_mode:{max_group_info.group_data.group.obs_mode()} '
             #       f'nir_sci:{max_group_info.exec_sci_nir}')
-            # print(f'{max_group_info.group_data.group.required_resources()}')
-            # [print(wav) for wav in max_group_info.group_data.group.wavelengths()]
-            # print('Program observations')
-            # [print(f'\t {obs.unique_id.id}') for obs in prog_obs]
-            # print('Partner observations')
-            # [print(f'\t {obs.unique_id.id}') for obs in part_obs]
+            print(f'{max_group_info.group_data.group.required_resources()}')
+            [print(wav) for wav in max_group_info.group_data.group.wavelengths()]
+            print('Program observations')
+            [print(f'\t {obs.unique_id.id}') for obs in prog_obs]
+            print('Partner observations')
+            [print(f'\t {obs.unique_id.id}') for obs in part_obs]
             if max_group_info.n_std > 0:
                 if max_group_info.exec_sci_nir > ZeroTime:
                     standards, place_before = self.place_standards(
@@ -1212,7 +1212,6 @@ class GreedyMaxOptimizer(BaseOptimizer):
                     )
                     for ii, std in enumerate(standards):
                         n_slots_cal += time2slots(self.time_slot_length, std.exec_time())
-                        # print(f"{std.id.id} {place_before[ii]} {n_slots_cal}")
                         if place_before[ii]:
                             before_std = std
                         else:
